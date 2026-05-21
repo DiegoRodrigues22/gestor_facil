@@ -586,18 +586,75 @@ select.inp{cursor:pointer}
 
     <div class="section" style="padding-bottom:6px;padding-top:14px"><div class="sec-title">Forma de pagamento</div></div>
     <div class="pay-grid">
-      <button class="pay-btn sel" onclick="selPay(this,'PIX')">
+      <button class="pay-btn sel" id="pbtn-PIX" onclick="selPay(this,'PIX')">
         <i class="ti ti-qrcode"></i><span>PIX</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Dinheiro')">
+      <button class="pay-btn" id="pbtn-Dinheiro" onclick="selPay(this,'Dinheiro')">
         <i class="ti ti-cash"></i><span>Dinheiro</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Cartão')">
+      <button class="pay-btn" id="pbtn-Cartão" onclick="selPay(this,'Cartão')">
         <i class="ti ti-credit-card"></i><span>Cartão</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Fiado')">
+      <button class="pay-btn" id="pbtn-Fiado" onclick="selPay(this,'Fiado')">
         <i class="ti ti-user-dollar"></i><span>Crédito Loja</span>
       </button>
+    </div>
+
+    <!-- ── Painel Dinheiro ── -->
+    <div id="panel-Dinheiro" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💵 Troco</div>
+      <div class="inp-label" style="margin-bottom:4px">Troco para (R$) <span style="color:var(--text3);font-weight:400;font-size:11px">— opcional</span></div>
+      <input class="inp" type="number" id="pay-recebido" placeholder="Ex: 100,00" min="0" oninput="calcTroco()" style="margin:0 0 10px">
+      <div id="troco-result" style="display:none;background:var(--surface);border:1.5px solid var(--success);border-radius:9px;padding:10px 14px;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--text2);font-weight:600">TROCO</span>
+        <span id="pay-troco" style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:var(--success)">R$ 0,00</span>
+      </div>
+      <div id="troco-aviso" style="display:none;font-size:12px;color:var(--danger);font-weight:600;margin-top:6px;align-items:center;gap:5px">
+        <i class="ti ti-alert-circle"></i> Valor insuficiente para cobrir o total
+      </div>
+    </div>
+
+    <!-- ── Painel Cartão ── -->
+    <div id="panel-Cartão" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💳 Modalidade</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button id="card-debito" onclick="selCard('Débito')" style="flex:1;padding:10px 6px;border:1.5px solid var(--primary);border-radius:9px;background:var(--primary-light);color:var(--primary);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <i class="ti ti-device-mobile" style="font-size:16px"></i> Débito
+        </button>
+        <button id="card-credito" onclick="selCard('Crédito')" style="flex:1;padding:10px 6px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <i class="ti ti-credit-card" style="font-size:16px"></i> Crédito
+        </button>
+      </div>
+      <div id="panel-parcelas" style="display:none">
+        <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Parcelamento</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button id="parc-nao" onclick="selParcelar(false)" style="flex:1;padding:9px;border:1.5px solid var(--primary);border-radius:9px;background:var(--primary-light);color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;transition:.15s">À vista</button>
+          <button id="parc-sim" onclick="selParcelar(true)" style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:.15s">Parcelar</button>
+        </div>
+        <div id="panel-num-parcelas" style="display:none">
+          <select class="inp" id="num-parcelas" onchange="calcParcelas()" style="margin:0 0 6px">
+            <option value="2">2x</option><option value="3">3x</option><option value="4">4x</option>
+            <option value="5">5x</option><option value="6">6x</option><option value="7">7x</option>
+            <option value="8">8x</option><option value="9">9x</option><option value="10">10x</option>
+            <option value="11">11x</option><option value="12">12x</option>
+          </select>
+          <div id="parc-valor-label" style="font-size:13px;color:var(--text2);text-align:center;font-weight:600"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Painel Fiado ── -->
+    <div id="panel-Fiado" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🏪 Cliente <span style="color:var(--danger)">*obrigatório</span></div>
+      <input class="inp" type="text" id="fiado-search" placeholder="Buscar cliente..." oninput="filterFiadoCli(this.value)" style="margin:0 0 8px">
+      <div id="fiado-cli-list" style="max-height:150px;overflow-y:auto;border-radius:8px;border:1px solid var(--border);background:var(--surface)"></div>
+      <div id="fiado-cli-sel" style="display:none;margin-top:8px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:9px;padding:10px 12px;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--primary)" id="fiado-cli-nome">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Fiado atual: <span id="fiado-cli-val" style="font-weight:700;color:var(--danger)">R$ 0,00</span> · Limite: <span id="fiado-cli-lim">R$ 0,00</span></div>
+        </div>
+        <button onclick="clearFiadoCli()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px"><i class="ti ti-x"></i></button>
+      </div>
     </div>
 
     <div class="inp-group">
@@ -932,12 +989,16 @@ select.inp{cursor:pointer}
     <div class="modal-handle"></div>
     <div class="receipt">
       <div class="receipt-hdr">
-        <div class="receipt-logo">🏪 Mercadinho do João</div>
+        <div class="receipt-logo" id="rc-logo">🏪 Mercadinho do João</div>
         <div class="receipt-sub" id="rc-date"></div>
       </div>
       <div id="rc-items"></div>
       <div class="rline total"><span>TOTAL</span><span id="rc-total" style="color:var(--primary)"></span></div>
-      <div class="rline"><span style="color:var(--text2)">Pagamento</span><span id="rc-pay" style="font-weight:600"></span></div>
+      <!-- bloco pagamento -->
+      <div style="border-top:1px dashed var(--border);margin:0 16px;padding:10px 0">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;text-align:center">Forma de Pagamento</div>
+        <div id="rc-pay-block"></div>
+      </div>
       <div class="receipt-foot">Obrigado pela preferência! 😊</div>
     </div>
     <div style="padding:16px;display:flex;gap:10px">
@@ -1733,6 +1794,15 @@ async function dbLoadVendas() {
 async function finalizarVenda() {
   const items = Object.entries(cart).filter(([, q]) => q > 0);
   if (!items.length) { showToast('⚠️ Adicione pelo menos um produto'); return; }
+
+  const isFiado   = payMethod === 'Fiado';
+  const isDinheiro = payMethod === 'Dinheiro';
+  const isCartao  = payMethod === 'Cartão';
+
+  // Validações
+  if (isFiado && !fiadoCliId) { showToast('⚠️ Selecione um cliente para Crédito Loja'); return; }
+  const recebido = isDinheiro ? (parseFloat(document.getElementById('pay-recebido')?.value) || 0) : 0;
+
   const disc = parseFloat(document.getElementById('discount')?.value) || 0;
   let sub = 0;
   const itensDesc = [];
@@ -1750,60 +1820,86 @@ async function finalizarVenda() {
   });
 
   const total = Math.max(0, sub - disc);
-  const codigo = '#' + String(Date.now()).slice(-4).padStart(4, '0');
-  const isFiado = payMethod === 'Fiado';
-  const row = {
-    codigo,
-    itens: itensDesc.join(', '),
-    total,
-    desconto: disc,
-    pagamento: payMethod,
-    criado_em: new Date().toISOString()
-  };
 
-  // Comprovante imediato
-  const rcHTML = items.map(([id, q]) => {
+  // Validar valor recebido em dinheiro
+  if (isDinheiro && recebido > 0 && recebido < total) {
+    showToast('⚠️ Valor recebido menor que o total!'); return;
+  }
+
+  const troco  = isDinheiro && recebido > 0 ? recebido - total : 0;
+  const nParc  = isCartao && cardType === 'Crédito' && parcelar ? parseInt(document.getElementById('num-parcelas')?.value) || 1 : 1;
+  const pagLabel = isCartao ? `Cartão ${cardType}${nParc > 1 ? ` ${nParc}x` : ''}` : isFiado ? 'Crédito Loja' : payMethod;
+  const cliSel  = isFiado ? clientes.find(x => x.id === fiadoCliId) : null;
+  const codigo  = '#' + String(Date.now()).slice(-4).padStart(4, '0');
+
+  // ── Montar comprovante ──
+  const rcItens = items.map(([id, q]) => {
     const p = products.find(x => x.id == id);
     return p ? `<div class="rline"><span>${p.name} x${q}</span><span>R$ ${fmt(p.price * q)}</span></div>` : '';
   }).join('');
-  document.getElementById('rc-items').innerHTML = rcHTML
-    + (disc > 0 ? `<div class="rline" style="color:var(--success)"><span>Desconto</span><span>− R$ ${fmt(disc)}</span></div>` : '')
-    + (isFiado ? `<div class="rline" style="color:var(--warning)"><span>Forma de pgto</span><span>📋 Crédito Loja</span></div>` : '');
+
+  document.getElementById('rc-items').innerHTML = rcItens
+    + (disc > 0 ? `<div class="rline" style="color:var(--success)"><span>Desconto</span><span>− R$ ${fmt(disc)}</span></div>` : '');
+
   document.getElementById('rc-total').textContent = 'R$ ' + fmt(total);
-  document.getElementById('rc-pay').textContent = isFiado ? 'Crédito Loja (Fiado)' : payMethod;
-  document.getElementById('rc-date').textContent = new Date().toLocaleString('pt-BR');
+  document.getElementById('rc-date').textContent  = new Date().toLocaleString('pt-BR');
+
+  // Bloco de pagamento contextual
+  let payBlock = '';
+  if (payMethod === 'PIX') {
+    payBlock = `<div class="rline" style="justify-content:center"><span style="font-weight:700;color:var(--primary);font-size:15px">PIX</span></div>`;
+  } else if (isDinheiro) {
+    payBlock = `<div class="rline"><span style="color:var(--text2)">Dinheiro</span><span style="font-weight:600">—</span></div>`
+      + (recebido > 0 ? `<div class="rline"><span style="color:var(--text2)">Recebido</span><span style="font-weight:600">R$ ${fmt(recebido)}</span></div>` : '')
+      + (troco > 0    ? `<div class="rline"><span style="color:var(--text2)">Troco</span><span style="font-weight:700;color:var(--success)">R$ ${fmt(troco)}</span></div>` : '');
+  } else if (isCartao) {
+    payBlock = `<div class="rline"><span style="color:var(--text2)">Cartão ${cardType}</span><span style="font-weight:600">${nParc > 1 ? `Parcelado` : 'À vista'}</span></div>`
+      + (nParc > 1 ? `<div class="rline"><span style="color:var(--text2)">Parcelamento</span><span style="font-weight:700;color:var(--primary)">${nParc}x de R$ ${fmt(total/nParc)}</span></div>` : '');
+  } else if (isFiado) {
+    payBlock = `<div class="rline"><span style="color:var(--text2)">Crédito Loja</span><span style="font-weight:600">—</span></div>`
+      + (cliSel ? `<div class="rline"><span style="color:var(--text2)">Cliente</span><span style="font-weight:700;color:var(--primary)">${cliSel.name}</span></div>` : '');
+  }
+  document.getElementById('rc-pay-block').innerHTML = payBlock;
+
   openModal('modal-receipt');
 
-  // Salva venda no Supabase
+  // ── Salva venda ──
+  const row = { codigo, itens: itensDesc.join(', '), total, desconto: disc, pagamento: pagLabel, criado_em: new Date().toISOString() };
   const { error } = await sb.from('vendas').insert([row]);
-  if (error) { showToast('⚠️ Erro ao salvar venda'); console.error(error); }
+  if (error) console.error('Erro ao salvar venda', error);
 
-  // Se Fiado: registra em contas a receber
-  if (isFiado) {
+  // ── Fiado: lança em contas a receber e atualiza cliente ──
+  if (isFiado && cliSel) {
     const venc = new Date(); venc.setDate(venc.getDate() + 30);
-    const fiadoRow = {
-      descricao: `Fiado — ${itensDesc.join(', ')} (${codigo})`,
+    await sb.from('contas_receber').insert([{
+      descricao: `Crédito Loja — ${cliSel.name} — ${itensDesc.join(', ')} (${codigo})`,
       valor: total,
       vencimento: venc.toISOString().split('T')[0],
       status: 'pendente',
       recebido: false
-    };
-    const { error: fe } = await sb.from('contas_receber').insert([fiadoRow]);
-    if (!fe) showToast('📋 Lançado em Contas a Receber!');
+    }]);
+    const novoFiado = cliSel.fiado + total;
+    await sb.from('clientes').update({ fiado: novoFiado }).eq('id', fiadoCliId);
+    cliSel.fiado = novoFiado;
+    showToast(`✅ Venda registrada em Crédito Loja — ${cliSel.name}`);
+  } else {
+    showToast('✅ Venda concluída!');
   }
 
-  // Atualiza estoque
+  // ── Atualiza estoque ──
   await Promise.all(estoqueUpdates.map(({ id, novaQty }) => dbUpdateStock(id, novaQty)));
 
-  // Reset carrinho
-  cart = {}; payMethod = 'PIX';
+  // ── Reset total ──
+  cart = {}; payMethod = 'PIX'; cardType = 'Débito'; parcelar = false; fiadoCliId = null;
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  document.querySelector('.pay-btn')?.classList.add('sel');
-  const d = document.getElementById('discount'); if (d) d.value = '';
+  document.getElementById('pbtn-PIX')?.classList.add('sel');
+  ['Dinheiro','Cartão','Fiado'].forEach(k => { const p = document.getElementById('panel-' + k); if (p) p.style.display = 'none'; });
+  clearFiadoCli();
+  const dEl = document.getElementById('discount'); if (dEl) dEl.value = '';
+  const rEl = document.getElementById('pay-recebido'); if (rEl) rEl.value = '';
   renderSaleProds(''); updateTotal();
 
-  // Atualiza dados em paralelo: vendas, estoque e dashboard
-  await Promise.all([dbLoadVendas(), dbLoadFinanceiro()]);
+  await Promise.all([dbLoadVendas(), dbLoadFinanceiro(), dbLoadClientes()]);
   renderEstoque();
   renderHomeDashboard();
 }
@@ -1971,10 +2067,12 @@ function renderHomeRecent() {
 // RENDER — VENDA
 // ========================================
 function resetVenda() {
-  cart = {}; payMethod = 'PIX';
+  cart = {}; payMethod = 'PIX'; cardType = 'Débito'; parcelar = false; fiadoCliId = null;
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  document.querySelector('.pay-btn')?.classList.add('sel');
+  document.getElementById('pbtn-PIX')?.classList.add('sel');
+  ['Dinheiro','Cartão','Fiado'].forEach(k => { const p = document.getElementById('panel-' + k); if (p) p.style.display = 'none'; });
   const d = document.getElementById('discount'); if (d) d.value = '';
+  const r = document.getElementById('pay-recebido'); if (r) r.value = '';
   renderSaleProds(''); updateTotal();
 }
 
@@ -2014,16 +2112,146 @@ function updateTotal() {
   const total = Math.max(0, sub - disc);
   const el = document.getElementById('total-val'); if (el) el.textContent = 'R$ ' + fmt(total);
 
-  // Mostrar botão Finalizar SOMENTE se houver itens no carrinho e estiver na aba vendas
+  // Atualiza cálculos dependentes do total
+  if (payMethod === 'Dinheiro') calcTroco();
+  if (payMethod === 'Cartão' && parcelar) calcParcelas();
+
   const hasItems = Object.values(cart).some(q => q > 0);
   const activePage = document.querySelector('.page.active')?.id;
   const tb = document.getElementById('total-bar');
   if (tb) tb.style.display = (hasItems && activePage === 'page-vendas') ? '' : 'none';
 }
 
+// ========================================
+// PAGAMENTO — variáveis de estado
+// ========================================
+let cardType    = 'Débito';
+let parcelar    = false;
+let fiadoCliId  = null;
+
 function selPay(btn, m) {
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel'); payMethod = m;
+  btn.classList.add('sel');
+  payMethod = m;
+  // Ocultar todos os painéis
+  ['Dinheiro','Cartão','Fiado'].forEach(k => {
+    const p = document.getElementById('panel-' + k);
+    if (p) p.style.display = 'none';
+  });
+  // Abrir painel do método
+  if (m !== 'PIX') {
+    const p = document.getElementById('panel-' + m);
+    if (p) p.style.display = 'block';
+  }
+  if (m === 'Dinheiro') {
+    const r = document.getElementById('pay-recebido'); if (r) r.value = '';
+    const tr = document.getElementById('troco-result'); if (tr) tr.style.display = 'none';
+    const ta = document.getElementById('troco-aviso'); if (ta) ta.style.display = 'none';
+  }
+  if (m === 'Cartão') selCard('Débito');
+  if (m === 'Fiado')  renderFiadoCli('');
+}
+
+function calcTroco() {
+  const rec   = parseFloat(document.getElementById('pay-recebido')?.value) || 0;
+  const disc  = parseFloat(document.getElementById('discount')?.value) || 0;
+  let sub = 0;
+  Object.entries(cart).forEach(([id,q]) => { const p = products.find(x=>x.id==id); if(p&&q>0) sub+=p.price*q; });
+  const total = Math.max(0, sub - disc);
+  const troco = rec - total;
+
+  const tr   = document.getElementById('troco-result');
+  const ta   = document.getElementById('troco-aviso');
+  const tVal = document.getElementById('pay-troco');
+
+  if (rec === 0) {
+    if (tr) tr.style.display = 'none';
+    if (ta) ta.style.display = 'none';
+    return;
+  }
+  if (troco < 0) {
+    if (tr) tr.style.display = 'none';
+    if (ta) ta.style.display = 'flex';
+  } else {
+    if (ta) ta.style.display = 'none';
+    if (tr) tr.style.display = 'flex';
+    if (tVal) tVal.textContent = 'R$ ' + fmt(troco);
+  }
+}
+
+function selCard(tipo) {
+  cardType = tipo;
+  ['debito','credito'].forEach(k => {
+    const b = document.getElementById('card-' + k);
+    if (!b) return;
+    const sel = (k === 'debito' && tipo === 'Débito') || (k === 'credito' && tipo === 'Crédito');
+    b.style.borderColor = sel ? 'var(--primary)' : 'var(--border)';
+    b.style.background  = sel ? 'var(--primary-light)' : 'var(--surface)';
+    b.style.color       = sel ? 'var(--primary)' : 'var(--text2)';
+  });
+  const pp = document.getElementById('panel-parcelas');
+  if (pp) pp.style.display = tipo === 'Crédito' ? 'block' : 'none';
+  if (tipo === 'Crédito') selParcelar(false);
+  parcelar = false;
+}
+
+function selParcelar(sim) {
+  parcelar = sim;
+  const pn = document.getElementById('parc-nao');
+  const ps = document.getElementById('parc-sim');
+  const pnp = document.getElementById('panel-num-parcelas');
+  if (pn) { pn.style.borderColor = !sim ? 'var(--primary)':'var(--border)'; pn.style.background = !sim ? 'var(--primary-light)':'var(--surface)'; pn.style.color = !sim ? 'var(--primary)':'var(--text2)'; }
+  if (ps) { ps.style.borderColor =  sim ? 'var(--primary)':'var(--border)'; ps.style.background =  sim ? 'var(--primary-light)':'var(--surface)'; ps.style.color =  sim ? 'var(--primary)':'var(--text2)'; }
+  if (pnp) pnp.style.display = sim ? 'block' : 'none';
+  if (sim) calcParcelas();
+}
+
+function calcParcelas() {
+  const disc = parseFloat(document.getElementById('discount')?.value) || 0;
+  let sub = 0;
+  Object.entries(cart).forEach(([id,q]) => { const p = products.find(x=>x.id==id); if(p&&q>0) sub+=p.price*q; });
+  const total = Math.max(0, sub - disc);
+  const n = parseInt(document.getElementById('num-parcelas')?.value) || 2;
+  const lbl = document.getElementById('parc-valor-label');
+  if (lbl && total > 0) lbl.textContent = n + 'x de R$ ' + fmt(total / n);
+}
+
+function renderFiadoCli(q) {
+  const lista = clientes.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+  const el = document.getElementById('fiado-cli-list');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:var(--text3)">Nenhum cliente encontrado</div>'; return; }
+  el.innerHTML = lista.map(c => `
+    <div onclick="pickFiadoCli(${c.id})" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;transition:.15s"
+      onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${c.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">Fiado: R$ ${fmt(c.fiado)} · Limite: R$ ${fmt(c.limite)}</div>
+      </div>
+      ${c.fiado > 0 ? '<span class="badge warn" style="font-size:10px">Fiado</span>' : '<span class="badge blue" style="font-size:10px">OK</span>'}
+    </div>`).join('');
+}
+
+function filterFiadoCli(q) { renderFiadoCli(q); }
+
+function pickFiadoCli(id) {
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+  fiadoCliId = id;
+  const sel  = document.getElementById('fiado-cli-sel');  if (sel)  sel.style.display  = 'flex';
+  const nome = document.getElementById('fiado-cli-nome'); if (nome) nome.textContent = c.name;
+  const val  = document.getElementById('fiado-cli-val');  if (val)  val.textContent  = 'R$ ' + fmt(c.fiado);
+  const lim  = document.getElementById('fiado-cli-lim');  if (lim)  lim.textContent  = 'R$ ' + fmt(c.limite);
+  const list = document.getElementById('fiado-cli-list'); if (list) list.style.display = 'none';
+  const sr   = document.getElementById('fiado-search');   if (sr)   sr.style.display  = 'none';
+}
+
+function clearFiadoCli() {
+  fiadoCliId = null;
+  const sel  = document.getElementById('fiado-cli-sel');  if (sel)  sel.style.display  = 'none';
+  const list = document.getElementById('fiado-cli-list'); if (list) list.style.display = '';
+  const sr   = document.getElementById('fiado-search');   if (sr)   { sr.style.display = ''; sr.value = ''; }
+  renderFiadoCli('');
 }
 
 // ========================================
