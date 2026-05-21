@@ -2006,9 +2006,9 @@ async function dbLoadFinanceiro() {
     sb.from('contas_receber').select('*').order('vencimento'),
     sb.from('despesas').select('*').order('criado_em', { ascending: false }).limit(30)
   ]);
-  aPagar = (resPagar.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente' }));
-  aReceber = (resReceber.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente' }));
-  despesas = (resDesp.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em), cat: r.categoria || 'Outros' }));
+  aPagar   = (resPagar.data   || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente', pago:     !!r.pago     }));
+  aReceber = (resReceber.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente', recebido: !!r.recebido }));
+  despesas = (resDesp.data    || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em),  cat: r.categoria || 'Outros', pago:    !!r.pago     }));
   renderFinanceiro();
   renderHomeDashboard();
   renderRelatorio();
@@ -2591,22 +2591,38 @@ function openBaixaModal(tipo, id) {
 
 async function confirmarBaixa() {
   const tipo = document.getElementById('baixa-tipo').value;
-  const id   = document.getElementById('baixa-id').value;
-  let tabela, campo, lista;
-  if (tipo === 'pagar')   { tabela = 'contas_pagar';   campo = 'pago';     lista = aPagar;   }
-  if (tipo === 'receber') { tabela = 'contas_receber';  campo = 'recebido'; lista = aReceber; }
-  if (tipo === 'despesa') { tabela = 'despesas';        campo = 'pago';     lista = despesas; }
+  const id   = parseInt(document.getElementById('baixa-id').value, 10); // garante número inteiro
+  let tabela, updatePayload, lista;
 
-  const { error } = await sb.from(tabela).update({ [campo]: true }).eq('id', id);
+  if (tipo === 'pagar') {
+    tabela        = 'contas_pagar';
+    updatePayload = { pago: true, status: 'pago' };
+    lista         = aPagar;
+  } else if (tipo === 'receber') {
+    tabela        = 'contas_receber';
+    updatePayload = { recebido: true, status: 'recebido' };
+    lista         = aReceber;
+  } else if (tipo === 'despesa') {
+    tabela        = 'despesas';
+    updatePayload = { pago: true };
+    lista         = despesas;
+  }
+
+  console.log('[confirmarBaixa] tabela:', tabela, '| id:', id, '| payload:', updatePayload);
+
+  const { error } = await sb.from(tabela).update(updatePayload).eq('id', id);
+
   if (error) {
-    // fallback offline: atualiza localmente
-    const item = lista.find(x => x.id == id);
-    if (item) item[campo] = true;
+    console.error('[confirmarBaixa] Erro Supabase:', error);
+    showToast('⚠️ Erro ao dar baixa: ' + (error.message || JSON.stringify(error)));
+    // fallback local para não travar o usuário
+    const item = lista.find(x => x.id === id);
+    if (item) Object.assign(item, updatePayload);
     closeModal('modal-baixa');
-    showToast('✅ Baixa registrada!');
     renderFinanceiro();
     return;
   }
+
   closeModal('modal-baixa');
   showToast('✅ Baixa registrada com sucesso!');
   await dbLoadFinanceiro();
