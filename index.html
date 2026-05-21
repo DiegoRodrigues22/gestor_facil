@@ -1372,14 +1372,22 @@ function navigate(p) {
     if (pg) pg.classList.toggle('active', id === p);
     if (nv) nv.classList.toggle('active', id === p);
   });
-  document.querySelector('.scroll-area').scrollTop = 0;
+
+  // FAB — só mostra na página ativa
+  document.querySelectorAll('.fab').forEach(f => f.style.display = 'none');
+  const activePage = document.getElementById('page-' + p);
+  const fab = activePage?.querySelector('.fab');
+  if (fab) fab.style.display = 'flex';
+
+  const sc = document.querySelector('.scroll-area');
+  if (sc) sc.scrollTop = 0;
+  window.scrollTo(0, 0);
 
   // Total bar só aparece na aba Vendas E com itens no carrinho
   const hasItems = Object.values(cart).some(q => q > 0);
   const tb = document.getElementById('total-bar');
   if (tb) tb.style.display = (p === 'vendas' && hasItems) ? '' : 'none';
 
-  // Ao entrar no financeiro, atualiza relatório
   if (p === 'financeiro') renderRelatorio();
   if (p === 'config') { loadEmpresa(); loadPrefs(); loadSistema(); }
 }
@@ -1844,7 +1852,7 @@ async function finalizarVenda() {
   document.getElementById('rc-total').textContent = 'R$ ' + fmt(total);
   document.getElementById('rc-date').textContent  = new Date().toLocaleString('pt-BR');
 
-  // Bloco de pagamento contextual
+  // ── Bloco de pagamento contextual ──
   let payBlock = '';
   if (payMethod === 'PIX') {
     payBlock = `<div class="rline" style="justify-content:center"><span style="font-weight:700;color:var(--primary);font-size:15px">PIX</span></div>`;
@@ -1856,40 +1864,62 @@ async function finalizarVenda() {
     payBlock = `<div class="rline"><span style="color:var(--text2)">Cartão ${cardType}</span><span style="font-weight:600">${nParc > 1 ? `Parcelado` : 'À vista'}</span></div>`
       + (nParc > 1 ? `<div class="rline"><span style="color:var(--text2)">Parcelamento</span><span style="font-weight:700;color:var(--primary)">${nParc}x de R$ ${fmt(total/nParc)}</span></div>` : '');
   } else if (isFiado) {
-    payBlock = `<div class="rline"><span style="color:var(--text2)">Crédito Loja</span><span style="font-weight:600">—</span></div>`
-      + (cliSel ? `<div class="rline"><span style="color:var(--text2)">Cliente</span><span style="font-weight:700;color:var(--primary)">${cliSel.name}</span></div>` : '');
+    // BUG 1 FIX: exibe Crédito Loja, cliente, total e status Pendente no comprovante
+    payBlock = `<div class="rline"><span style="color:var(--text2)">Pagamento</span><span style="font-weight:700;color:var(--primary)">Crédito Loja</span></div>`
+      + (cliSel ? `<div class="rline"><span style="color:var(--text2)">Cliente</span><span style="font-weight:700;color:var(--primary)">${cliSel.name}</span></div>` : '')
+      + `<div class="rline"><span style="color:var(--text2)">Total</span><span style="font-weight:700">R$ ${fmt(total)}</span></div>`
+      + `<div class="rline"><span style="color:var(--text2)">Status</span><span style="font-weight:700;color:var(--warning)">Pendente</span></div>`
+      + `<div style="border-top:1px dashed var(--border);margin:8px 0;text-align:center;font-size:11px;color:var(--text3);padding-top:6px">═══════════════════</div>`;
   }
   document.getElementById('rc-pay-block').innerHTML = payBlock;
 
-  openModal('modal-receipt');
-
-  // ── Salva venda ──
+  // BUG 1 FIX: salva venda ANTES de abrir o modal, garantindo fluxo correto
+  // 1. Salvar venda
   const row = { codigo, itens: itensDesc.join(', '), total, desconto: disc, pagamento: pagLabel, criado_em: new Date().toISOString() };
   const { error } = await sb.from('vendas').insert([row]);
   if (error) console.error('Erro ao salvar venda', error);
 
-  // ── Fiado: lança em contas a receber e atualiza cliente ──
+  // 2. BUG 2 FIX: Crédito Loja — registrar conta a receber com estrutura correta
   if (isFiado && cliSel) {
-    const venc = new Date(); venc.setDate(venc.getDate() + 30);
-    await sb.from('contas_receber').insert([{
-      descricao: `Crédito Loja — ${cliSel.name} — ${itensDesc.join(', ')} (${codigo})`,
+    const todayISO = new Date().toISOString().split('T')[0];
+    const novaContaReceber = {
+      descricao: `Venda - ${cliSel.name}`,
       valor: total,
-      vencimento: venc.toISOString().split('T')[0],
+      vencimento: todayISO,
       status: 'pendente',
-      recebido: false
-    }]);
+      recebido: false,
+      cliente: cliSel.name
+    };
+    const { data: recData, error: recError } = await sb.from('contas_receber').insert([novaContaReceber]).select().single();
+    if (recError) {
+      console.error('Erro ao lançar conta a receber', recError);
+    } else {
+      // Atualiza lista local imediatamente (sem esperar dbLoadFinanceiro)
+      aReceber.push({
+        id: recData?.id || Date.now(),
+        desc: novaContaReceber.descricao,
+        val: total,
+        venc: fmtDate(todayISO),
+        st: 'pendente',
+        cliente: cliSel.name
+      });
+    }
+    // Atualiza fiado do cliente
     const novoFiado = cliSel.fiado + total;
     await sb.from('clientes').update({ fiado: novoFiado }).eq('id', fiadoCliId);
     cliSel.fiado = novoFiado;
-    showToast(`✅ Venda registrada em Crédito Loja — ${cliSel.name}`);
+    showToast(`✅ Venda registrada — Crédito Loja: ${cliSel.name}`);
   } else {
     showToast('✅ Venda concluída!');
   }
 
-  // ── Atualiza estoque ──
+  // 3. Gerar comprovante (abre modal após salvar)
+  openModal('modal-receipt');
+
+  // 4. Atualiza estoque
   await Promise.all(estoqueUpdates.map(({ id, novaQty }) => dbUpdateStock(id, novaQty)));
 
-  // ── Reset total ──
+  // 5. Limpar carrinho e reset
   cart = {}; payMethod = 'PIX'; cardType = 'Débito'; parcelar = false; fiadoCliId = null;
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
   document.getElementById('pbtn-PIX')?.classList.add('sel');
@@ -1899,6 +1929,7 @@ async function finalizarVenda() {
   const rEl = document.getElementById('pay-recebido'); if (rEl) rEl.value = '';
   renderSaleProds(''); updateTotal();
 
+  // 6. Atualizar telas
   await Promise.all([dbLoadVendas(), dbLoadFinanceiro(), dbLoadClientes()]);
   renderEstoque();
   renderHomeDashboard();
@@ -2619,46 +2650,6 @@ async function init() {
     console.error(e);
   }
 }
-function navigate(page){
-
-  // remove active das páginas
-  document.querySelectorAll('.page').forEach(p=>{
-    p.classList.remove('active');
-  });
-
-  // ativa página atual
-  const currentPage = document.getElementById('page-' + page);
-
-  if(currentPage){
-    currentPage.classList.add('active');
-  }
-
-  // nav inferior
-  document.querySelectorAll('.nav-item').forEach(n=>{
-    n.classList.remove('active');
-  });
-
-  const currentNav = document.getElementById('nav-' + page);
-
-  if(currentNav){
-    currentNav.classList.add('active');
-  }
-
-  // FAB
-  document.querySelectorAll('.fab').forEach(f=>{
-    f.style.display='none';
-  });
-
-  const fab = currentPage?.querySelector('.fab');
-
-  if(fab){
-    fab.style.display='flex';
-  }
-
-  window.scrollTo(0,0);
-}
-
-
 init();
 function closeModal(id){
   document.getElementById(id)?.classList.remove('open');
