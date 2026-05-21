@@ -518,16 +518,6 @@ select.inp{cursor:pointer}
       <div class="stat-val green num" id="dash-vendas">R$ 0,00</div>
       <div class="stat-chg up" id="dash-vendas-sub">0 pedidos hoje</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-lbl"><i class="ti ti-credit-card-off"></i> Despesas</div>
-      <div class="stat-val red num" id="dash-despesas">R$ 0,00</div>
-      <div class="stat-chg" id="dash-despesas-sub">0 lançamentos</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-lbl"><i class="ti ti-trending-up"></i> Lucro est.</div>
-      <div class="stat-val green num" id="dash-lucro">R$ 0,00</div>
-      <div class="stat-chg up" id="dash-margem">Margem 0%</div>
-    </div>
     <div class="stat-card wide">
       <div>
         <div class="stat-lbl">Vendas da semana</div>
@@ -596,18 +586,60 @@ select.inp{cursor:pointer}
 
     <div class="section" style="padding-bottom:6px;padding-top:14px"><div class="sec-title">Forma de pagamento</div></div>
     <div class="pay-grid">
-      <button class="pay-btn sel" onclick="selPay(this,'PIX')">
+      <button class="pay-btn sel" id="pbtn-PIX" onclick="selPay(this,'PIX')">
         <i class="ti ti-qrcode"></i><span>PIX</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Dinheiro')">
+      <button class="pay-btn" id="pbtn-Dinheiro" onclick="selPay(this,'Dinheiro')">
         <i class="ti ti-cash"></i><span>Dinheiro</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Cartão')">
+      <button class="pay-btn" id="pbtn-Cartão" onclick="selPay(this,'Cartão')">
         <i class="ti ti-credit-card"></i><span>Cartão</span>
       </button>
-      <button class="pay-btn" onclick="selPay(this,'Fiado')">
+      <button class="pay-btn" id="pbtn-Fiado" onclick="selPay(this,'Fiado')">
         <i class="ti ti-user-dollar"></i><span>Crédito Loja</span>
       </button>
+    </div>
+
+    <!-- Painel: Dinheiro → Troco -->
+    <div id="panel-Dinheiro" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Calcular troco</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Valor recebido (R$)</div>
+          <input class="inp" type="number" id="pay-recebido" placeholder="0,00" min="0" oninput="calcTroco()" style="margin:0">
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Troco</div>
+          <div id="pay-troco" style="font-family:Sora,sans-serif;font-size:20px;font-weight:700;color:var(--success)">R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel: Cartão → Crédito / Débito -->
+    <div id="panel-Cartão" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Modalidade do cartão</div>
+      <div style="display:flex;gap:10px">
+        <button id="card-debito" onclick="selCard('Débito')" style="flex:1;padding:12px 6px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:5px">
+          <i class="ti ti-device-mobile" style="font-size:22px"></i>Débito
+        </button>
+        <button id="card-credito" onclick="selCard('Crédito')" style="flex:1;padding:12px 6px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:5px">
+          <i class="ti ti-credit-card" style="font-size:22px"></i>Crédito
+        </button>
+      </div>
+    </div>
+
+    <!-- Painel: Fiado → Selecionar cliente -->
+    <div id="panel-Fiado" style="display:none;margin:0 16px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Selecionar cliente</div>
+      <input class="inp" type="text" id="fiado-search" placeholder="Buscar cliente..." oninput="filterFiadoCli(this.value)" style="margin:0 0 8px">
+      <div id="fiado-cli-list" style="max-height:160px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)"></div>
+      <div id="fiado-cli-sel" style="display:none;margin-top:10px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:9px;padding:10px 12px;display:none;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--primary)" id="fiado-cli-nome">—</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Fiado atual: <span id="fiado-cli-val" style="font-weight:700;color:var(--danger)">R$ 0,00</span> · Limite: <span id="fiado-cli-lim">R$ 0,00</span></div>
+        </div>
+        <button onclick="clearFiadoCli()" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:18px"><i class="ti ti-x"></i></button>
+      </div>
     </div>
 
     <div class="inp-group">
@@ -1404,6 +1436,10 @@ async function dbLoadVendas() {
 async function finalizarVenda() {
   const items = Object.entries(cart).filter(([, q]) => q > 0);
   if (!items.length) { showToast('⚠️ Adicione pelo menos um produto'); return; }
+
+  const isFiado = payMethod === 'Fiado';
+  if (isFiado && !fiadoCliId) { showToast('⚠️ Selecione um cliente para o Crédito Loja'); return; }
+
   const disc = parseFloat(document.getElementById('discount')?.value) || 0;
   let sub = 0;
   const itensDesc = [];
@@ -1422,61 +1458,73 @@ async function finalizarVenda() {
 
   const total = Math.max(0, sub - disc);
   const codigo = '#' + String(Date.now()).slice(-4).padStart(4, '0');
-  const isFiado = payMethod === 'Fiado';
+  const isCartao = payMethod === 'Cartão';
+  const pagLabel = isCartao ? `Cartão ${cardType}` : (isFiado ? 'Fiado' : payMethod);
+  const troco = payMethod === 'Dinheiro' ? Math.max(0, (parseFloat(document.getElementById('pay-recebido')?.value) || 0) - total) : 0;
+
   const row = {
     codigo,
     itens: itensDesc.join(', '),
     total,
     desconto: disc,
-    pagamento: payMethod,
+    pagamento: pagLabel,
     criado_em: new Date().toISOString()
   };
 
-  // Comprovante imediato
+  // Comprovante
+  const cliSel = isFiado ? clientes.find(x => x.id === fiadoCliId) : null;
   const rcHTML = items.map(([id, q]) => {
     const p = products.find(x => x.id == id);
     return p ? `<div class="rline"><span>${p.name} x${q}</span><span>R$ ${fmt(p.price * q)}</span></div>` : '';
   }).join('');
   document.getElementById('rc-items').innerHTML = rcHTML
     + (disc > 0 ? `<div class="rline" style="color:var(--success)"><span>Desconto</span><span>− R$ ${fmt(disc)}</span></div>` : '')
-    + (isFiado ? `<div class="rline" style="color:var(--warning)"><span>Forma de pgto</span><span>📋 Crédito Loja</span></div>` : '');
+    + (troco > 0 ? `<div class="rline" style="color:var(--primary)"><span>Troco</span><span>R$ ${fmt(troco)}</span></div>` : '')
+    + (isFiado && cliSel ? `<div class="rline" style="color:var(--warning)"><span>Cliente</span><span>${cliSel.name}</span></div>` : '')
+    + (isCartao ? `<div class="rline" style="color:var(--text2)"><span>Modalidade</span><span>${cardType}</span></div>` : '');
   document.getElementById('rc-total').textContent = 'R$ ' + fmt(total);
-  document.getElementById('rc-pay').textContent = isFiado ? 'Crédito Loja (Fiado)' : payMethod;
+  document.getElementById('rc-pay').textContent = pagLabel;
   document.getElementById('rc-date').textContent = new Date().toLocaleString('pt-BR');
   openModal('modal-receipt');
 
-  // Salva venda no Supabase
+  // Salva venda
   const { error } = await sb.from('vendas').insert([row]);
   if (error) { showToast('⚠️ Erro ao salvar venda'); console.error(error); }
 
-  // Se Fiado: registra em contas a receber
-  if (isFiado) {
+  // Fiado: lança em contas a receber E atualiza fiado do cliente
+  if (isFiado && cliSel) {
     const venc = new Date(); venc.setDate(venc.getDate() + 30);
-    const fiadoRow = {
-      descricao: `Fiado — ${itensDesc.join(', ')} (${codigo})`,
+    await sb.from('contas_receber').insert([{
+      descricao: `Fiado — ${cliSel.name} — ${itensDesc.join(', ')} (${codigo})`,
       valor: total,
       vencimento: venc.toISOString().split('T')[0],
       status: 'pendente',
       recebido: false
-    };
-    const { error: fe } = await sb.from('contas_receber').insert([fiadoRow]);
-    if (!fe) showToast('📋 Lançado em Contas a Receber!');
+    }]);
+    const novoFiado = cliSel.fiado + total;
+    await sb.from('clientes').update({ fiado: novoFiado }).eq('id', fiadoCliId);
+    cliSel.fiado = novoFiado;
+    showToast(`📋 Fiado de ${cliSel.name} atualizado!`);
   }
 
   // Atualiza estoque
   await Promise.all(estoqueUpdates.map(({ id, novaQty }) => dbUpdateStock(id, novaQty)));
 
-  // Reset carrinho
-  cart = {}; payMethod = 'PIX';
+  // Reset carrinho e pagamento
+  cart = {}; payMethod = 'PIX'; cardType = 'Débito'; fiadoCliId = null;
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  document.querySelector('.pay-btn')?.classList.add('sel');
+  document.getElementById('pbtn-PIX')?.classList.add('sel');
+  ['Dinheiro','Cartão','Fiado'].forEach(k => {
+    const p = document.getElementById('panel-' + k); if (p) p.style.display = 'none';
+  });
+  clearFiadoCli();
   const d = document.getElementById('discount'); if (d) d.value = '';
+  const rec = document.getElementById('pay-recebido'); if (rec) rec.value = '';
   renderSaleProds(''); updateTotal();
 
-  // Atualiza dados em paralelo: vendas, estoque, financeiro e dashboard
-  await Promise.all([dbLoadVendas(), dbLoadFinanceiro()]);
+  await Promise.all([dbLoadVendas(), dbLoadFinanceiro(), dbLoadClientes()]);
   renderEstoque();
-  renderDashboard();
+  renderHomeDashboard();
 }
 
 function renderHist() {
@@ -1595,19 +1643,14 @@ function renderHomeDashboard() {
   const vendasHoje = salesHist.filter(s => s.criado_em && s.criado_em.startsWith(hoje));
   const totalVendas = vendasHoje.reduce((a, s) => a + s.total, 0);
   const qtdVendas = vendasHoje.length;
-  const totalDesp = despesas.reduce((a, d) => a + d.val, 0);
-  const lucro = Math.max(0, totalVendas - totalDesp);
-  const margem = totalVendas > 0 ? Math.round((lucro / totalVendas) * 100) : 0;
-  const caixa = totalVendas - totalDesp;
 
-  document.getElementById('dash-caixa').textContent = 'R$ ' + fmt(Math.max(0, caixa));
-  document.getElementById('dash-caixa-sub').textContent = qtdVendas > 0 ? `↑ ${qtdVendas} vendas hoje` : 'Nenhuma venda hoje';
+  // Caixa hoje = total das vendas concluídas no dia (sem descontar despesas)
+  document.getElementById('dash-caixa').textContent = 'R$ ' + fmt(totalVendas);
+  document.getElementById('dash-caixa-sub').textContent = qtdVendas > 0 ? `↑ ${qtdVendas} venda${qtdVendas !== 1 ? 's' : ''} hoje` : 'Nenhuma venda hoje';
   document.getElementById('dash-vendas').textContent = 'R$ ' + fmt(totalVendas);
   document.getElementById('dash-vendas-sub').textContent = qtdVendas + ' pedido' + (qtdVendas !== 1 ? 's' : '') + ' hoje';
-  document.getElementById('dash-despesas').textContent = 'R$ ' + fmt(totalDesp);
-  document.getElementById('dash-despesas-sub').textContent = despesas.length + ' lançamentos';
-  document.getElementById('dash-lucro').textContent = 'R$ ' + fmt(lucro);
-  document.getElementById('dash-margem').textContent = 'Margem ' + margem + '%';
+
+
 
   const semana = salesHist.slice(0, 7).reduce((a, s) => a + s.total, 0);
   document.getElementById('dash-semana').textContent = 'R$ ' + fmt(semana);
@@ -1647,10 +1690,15 @@ function renderHomeRecent() {
 // RENDER — VENDA
 // ========================================
 function resetVenda() {
-  cart = {}; payMethod = 'PIX';
+  cart = {}; payMethod = 'PIX'; cardType = 'Débito'; fiadoCliId = null;
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  document.querySelector('.pay-btn')?.classList.add('sel');
+  document.getElementById('pbtn-PIX')?.classList.add('sel');
+  ['Dinheiro','Cartão','Fiado'].forEach(k => {
+    const p = document.getElementById('panel-' + k); if (p) p.style.display = 'none';
+  });
+  clearFiadoCli();
   const d = document.getElementById('discount'); if (d) d.value = '';
+  const rec = document.getElementById('pay-recebido'); if (rec) rec.value = '';
   renderSaleProds(''); updateTotal();
 }
 
@@ -1697,9 +1745,88 @@ function updateTotal() {
   if (tb) tb.style.display = (hasItems && activePage === 'page-vendas') ? '' : 'none';
 }
 
+let cardType = 'Débito';
+let fiadoCliId = null;
+
 function selPay(btn, m) {
   document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel'); payMethod = m;
+  btn.classList.add('sel');
+  payMethod = m;
+  ['Dinheiro','Cartão','Fiado'].forEach(k => {
+    const p = document.getElementById('panel-' + k);
+    if (p) p.style.display = m === k ? 'block' : 'none';
+  });
+  if (m === 'Dinheiro') {
+    const r = document.getElementById('pay-recebido'); if (r) r.value = '';
+    const t = document.getElementById('pay-troco'); if (t) t.textContent = 'R$ 0,00';
+  }
+  if (m === 'Cartão') selCard('Débito');
+  if (m === 'Fiado') renderFiadoCli('');
+}
+
+function calcTroco() {
+  const rec = parseFloat(document.getElementById('pay-recebido')?.value) || 0;
+  const disc = parseFloat(document.getElementById('discount')?.value) || 0;
+  let sub = 0;
+  Object.entries(cart).forEach(([id, q]) => { const p = products.find(x => x.id == id); if (p && q > 0) sub += p.price * q; });
+  const total = Math.max(0, sub - disc);
+  const troco = rec - total;
+  const el = document.getElementById('pay-troco');
+  if (el) {
+    el.textContent = troco >= 0 ? 'R$ ' + fmt(troco) : '—';
+    el.style.color = troco >= 0 ? 'var(--success)' : 'var(--danger)';
+  }
+}
+
+function selCard(tipo) {
+  cardType = tipo;
+  ['debito','credito'].forEach(k => {
+    const b = document.getElementById('card-' + k);
+    if (!b) return;
+    const sel = (k === 'debito' && tipo === 'Débito') || (k === 'credito' && tipo === 'Crédito');
+    b.style.borderColor = sel ? 'var(--primary)' : 'var(--border)';
+    b.style.background  = sel ? 'var(--primary-light)' : 'var(--surface)';
+    b.style.color       = sel ? 'var(--primary)' : 'var(--text2)';
+  });
+}
+
+function renderFiadoCli(q) {
+  const lista = clientes.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+  const el = document.getElementById('fiado-cli-list');
+  if (!el) return;
+  if (!lista.length) { el.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:var(--text3)">Nenhum cliente encontrado</div>'; return; }
+  el.innerHTML = lista.map(c => `
+    <div onclick="pickFiadoCli(${c.id})" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);transition:.15s"
+      onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background='var(--surface)'">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${c.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">Fiado atual: R$ ${fmt(c.fiado)} · Limite: R$ ${fmt(c.limite)}</div>
+      </div>
+      ${c.fiado > 0 ? '<span class="badge warn" style="font-size:10px">Fiado</span>' : '<span class="badge blue" style="font-size:10px">OK</span>'}
+    </div>`).join('');
+}
+
+function filterFiadoCli(q) { renderFiadoCli(q); }
+
+function pickFiadoCli(id) {
+  const c = clientes.find(x => x.id === id);
+  if (!c) return;
+  fiadoCliId = id;
+  const sel = document.getElementById('fiado-cli-sel');
+  if (sel) sel.style.display = 'flex';
+  const nome = document.getElementById('fiado-cli-nome'); if (nome) nome.textContent = c.name;
+  const val  = document.getElementById('fiado-cli-val');  if (val)  val.textContent  = 'R$ ' + fmt(c.fiado);
+  const lim  = document.getElementById('fiado-cli-lim');  if (lim)  lim.textContent  = 'R$ ' + fmt(c.limite);
+  const list = document.getElementById('fiado-cli-list'); if (list) list.style.display = 'none';
+  const sr   = document.getElementById('fiado-search');   if (sr)   sr.style.display  = 'none';
+}
+
+function clearFiadoCli() {
+  fiadoCliId = null;
+  const sel  = document.getElementById('fiado-cli-sel');  if (sel)  sel.style.display  = 'none';
+  const list = document.getElementById('fiado-cli-list'); if (list) list.style.display = '';
+  const sr   = document.getElementById('fiado-search');   if (sr)   { sr.style.display = ''; sr.value = ''; }
+  renderFiadoCli('');
 }
 
 // ========================================
