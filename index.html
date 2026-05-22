@@ -246,18 +246,25 @@ select.inp{cursor:pointer}
   animation:slideUp .25s ease;
 }
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
 
 .modal-handle{width:38px;height:4px;background:var(--border);border-radius:2px;margin:13px auto 16px}
 .modal-title{font-size:17px;font-weight:700;text-align:center;margin-bottom:18px;padding:0 16px;font-family:'Sora',sans-serif;color:var(--text)}
 
 /* ===== RECEIPT ===== */
-.receipt{margin:16px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius)}
-.receipt-hdr{text-align:center;padding:18px 16px;border-bottom:1px dashed var(--border)}
-.receipt-logo{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:var(--primary)}
-.receipt-sub{font-size:12px;color:var(--text2);margin-top:4px}
-.rline{display:flex;justify-content:space-between;padding:9px 16px;font-size:13px;color:var(--text)}
-.rline.total{border-top:1px solid var(--border);font-weight:700;font-size:15px;padding:13px 16px}
-.receipt-foot{text-align:center;padding:13px;border-top:1px dashed var(--border);font-size:11px;color:var(--text3)}
+.receipt{margin:12px 16px;background:#fff;border-radius:4px;font-family:'Courier New',Courier,monospace;color:#111;box-shadow:0 2px 12px rgba(0,0,0,.18);position:relative;overflow:hidden}
+.receipt::before,.receipt::after{content:'';display:block;height:12px;background:repeating-linear-gradient(90deg,#fff 0,#fff 8px,transparent 8px,transparent 16px),var(--surface);background-size:16px 12px}
+.receipt::before{border-bottom:1px dashed #ccc}
+.receipt::after{border-top:1px dashed #ccc}
+.receipt-hdr{text-align:center;padding:14px 16px 10px;border-bottom:1px dashed #ccc}
+.receipt-logo{font-size:15px;font-weight:700;color:#111;letter-spacing:.5px;text-transform:uppercase}
+.receipt-sub{font-size:10px;color:#555;margin-top:3px;line-height:1.6}
+.rline{display:flex;justify-content:space-between;padding:5px 16px;font-size:12px;color:#111}
+.rline.total{border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;font-weight:700;font-size:14px;padding:10px 16px;margin:4px 0}
+.rline.total span:last-child{color:#111}
+.receipt-foot{text-align:center;padding:10px 16px 14px;font-size:10px;color:#777;line-height:1.7}
+.rc-divider{border:none;border-top:1px dashed #ccc;margin:4px 16px}
+.rc-section-lbl{text-align:center;font-size:10px;color:#888;font-weight:700;letter-spacing:1px;padding:6px 16px 2px;text-transform:uppercase}
 
 /* ===== RELATÓRIO ===== */
 .rel-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
@@ -504,7 +511,7 @@ select.inp{cursor:pointer}
 <div class="page active" id="page-home">
   <div class="greeting">
     <div class="greet-sub" id="greet-sub">Bom dia! ☀️</div>
-    <div class="greet-name">Mercadinho do João</div>
+    <div class="greet-name" id="greet-name">Mercadinho do João</div>
   </div>
 
   <div class="stat-grid">
@@ -701,6 +708,9 @@ select.inp{cursor:pointer}
 
 <!-- ====== FINANCEIRO ====== -->
 <div class="page" id="page-financeiro">
+
+  <!-- Banner de alertas de vencimento -->
+  <div id="fin-alertas" style="display:none"></div>
 
   <div class="stat-grid">
     <div class="stat-card">
@@ -985,25 +995,44 @@ select.inp{cursor:pointer}
 
 <!-- ===== MODAL COMPROVANTE ===== -->
 <div class="overlay" id="modal-receipt">
-  <div class="modal">
+  <div class="modal" style="background:var(--surface2)">
     <div class="modal-handle"></div>
+    <div style="padding:4px 16px 0;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase">Comprovante de Venda</div>
     <div class="receipt">
+      <!-- Cabeçalho empresa -->
       <div class="receipt-hdr">
-        <div class="receipt-logo" id="rc-logo">🏪 Mercadinho do João</div>
-        <div class="receipt-sub" id="rc-date"></div>
+        <div class="receipt-logo" id="rc-logo">MERCADINHO DO JOÃO</div>
+        <div class="receipt-sub" id="rc-empresa-info"></div>
+        <div class="receipt-sub" id="rc-date" style="margin-top:6px;color:#888"></div>
+        <div id="rc-cod" style="font-size:10px;color:#aaa;margin-top:2px"></div>
       </div>
-      <div id="rc-items"></div>
-      <div class="rline total"><span>TOTAL</span><span id="rc-total" style="color:var(--primary)"></span></div>
-      <!-- bloco pagamento -->
-      <div style="border-top:1px dashed var(--border);margin:0 16px;padding:10px 0">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;text-align:center">Forma de Pagamento</div>
+
+      <!-- Itens -->
+      <div style="padding:6px 0 2px">
+        <div class="rc-section-lbl">ITENS</div>
+        <div id="rc-items"></div>
+      </div>
+
+      <!-- Total -->
+      <div class="rline total"><span>TOTAL</span><span id="rc-total"></span></div>
+
+      <!-- Pagamento -->
+      <div style="padding:2px 0 4px">
+        <div class="rc-section-lbl">PAGAMENTO</div>
         <div id="rc-pay-block"></div>
       </div>
-      <div class="receipt-foot">Obrigado pela preferência! 😊</div>
+
+      <!-- Rodapé -->
+      <div class="receipt-foot">
+        <div style="letter-spacing:1px">✦ ✦ ✦</div>
+        <div style="margin-top:4px">Obrigado pela preferência!</div>
+        <div id="rc-foot-empresa" style="margin-top:2px"></div>
+        <div style="margin-top:6px;font-size:9px;color:#bbb">Documento não fiscal — Gerado por Gestor Fácil</div>
+      </div>
     </div>
-    <div style="padding:16px;display:flex;gap:10px">
+    <div style="padding:12px 16px 16px;display:flex;gap:10px">
       <button class="btn-outline" style="flex:1" onclick="closeModal('modal-receipt')">Fechar</button>
-      <button class="btn-primary" style="flex:1" onclick="showToast('📲 Comprovante enviado!');closeModal('modal-receipt')"><i class="ti ti-share"></i> Compartilhar</button>
+      <button class="btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px" onclick="printCupom()"><i class="ti ti-printer"></i> Imprimir</button>
     </div>
   </div>
 </div>
@@ -1218,7 +1247,7 @@ select.inp{cursor:pointer}
 
     <!-- Ações -->
     <div style="display:flex;gap:10px;padding:4px 16px 8px">
-      <button class="btn-outline" onclick="window.print()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
+      <button class="btn-outline" onclick="printRelatorio()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
         <i class="ti ti-printer"></i> Imprimir
       </button>
       <button class="btn-primary" onclick="closeModal('relatorio-modal')" style="flex:1">
@@ -1360,8 +1389,269 @@ function setGreeting() {
   if (el) el.textContent = greet;
 }
 
+// ── Imprimir cupom fiscal ──
+function printCupom() {
+  const empresa = JSON.parse(localStorage.getItem('cfg_empresa') || '{}');
+  const nomeEmp = (empresa.nome || 'MERCADINHO DO JOÃO').toUpperCase();
+  const subInfo = [empresa.cnpj ? 'CNPJ: ' + empresa.cnpj : '', empresa.end || '', empresa.tel || ''].filter(Boolean).join('<br>');
+  const rcItems = document.getElementById('rc-items')?.innerHTML || '';
+  const rcTotal = document.getElementById('rc-total')?.textContent || '';
+  const rcDate  = document.getElementById('rc-date')?.textContent  || '';
+  const rcCod   = document.getElementById('rc-cod')?.textContent   || '';
+  const rcPay   = document.getElementById('rc-pay-block')?.innerHTML || '';
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Cupom — ${nomeEmp}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Courier New',Courier,monospace; font-size:12px; color:#111; background:#fff; width:80mm; margin:0 auto; }
+  @page { size: 80mm auto; margin: 6mm 0; }
+  @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+  .cut { border-top:1px dashed #999; margin:8px 0; }
+  .center { text-align:center; }
+  .bold { font-weight:700; }
+  .row { display:flex; justify-content:space-between; padding:3px 0; font-size:12px; }
+  .row.total { border-top:1px dashed #999; border-bottom:1px dashed #999; font-weight:700; font-size:14px; padding:7px 0; margin:4px 0; }
+  .sub { font-size:10px; color:#666; }
+  .label { font-size:9px; color:#999; letter-spacing:1px; text-transform:uppercase; text-align:center; padding:4px 0 2px; }
+  .sep { border:none; border-top:1px dashed #999; margin:6px 0; }
+</style></head><body>
+  <div class="center bold" style="font-size:15px;padding:10px 0 4px">${nomeEmp}</div>
+  <div class="center sub" style="padding-bottom:4px">${subInfo}</div>
+  <hr class="sep">
+  <div class="center sub">${rcDate}</div>
+  <div class="center sub">${rcCod}</div>
+  <hr class="sep">
+  <div class="label">ITENS</div>
+  ${rcItems.replace(/class="rline"/g, 'class="row"').replace(/style="flex-direction:column;padding:4px 16px"/g, 'style="flex-direction:column;padding:2px 0"')}
+  <div class="row total"><span>TOTAL</span><span>${rcTotal}</span></div>
+  <div class="label">PAGAMENTO</div>
+  ${rcPay.replace(/class="rline"/g, 'class="row"').replace(/color:#555/g, 'color:#666')}
+  <hr class="sep">
+  <div class="center sub" style="padding:6px 0">Obrigado pela preferência!</div>
+  <div class="center" style="font-size:9px;color:#bbb;padding-bottom:10px">Documento não fiscal · Gestor Fácil</div>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=400,height=600');
+  w.document.write(html);
+  w.document.close();
+  w.onload = () => { w.focus(); w.print(); };
+}
+
 // ========================================
-// NAVIGATION
+// IMPRIMIR RELATÓRIO — janela profissional A4
+// ========================================
+function printRelatorio() {
+  const empresa   = JSON.parse(localStorage.getItem('cfg_empresa') || '{}');
+  const nomeEmp   = empresa.nome || 'Gestor Fácil';
+  const cnpjEmp   = empresa.cnpj ? 'CNPJ: ' + empresa.cnpj : '';
+  const endEmp    = empresa.end  || '';
+  const telEmp    = empresa.tel  || '';
+  const agora     = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  const totalVendas   = salesHist.reduce((a, s) => a + s.total, 0);
+  const totalReceber  = aReceber.filter(i => !i.recebido).reduce((a, i) => a + i.val, 0);
+  const totalPagar    = aPagar.filter(i => !i.pago).reduce((a, i) => a + i.val, 0);
+  const totalDesp     = despesas.reduce((a, i) => a + i.val, 0);
+  const saldo         = totalVendas - totalPagar - totalDesp;
+  const qtd           = salesHist.length;
+  const ticket        = qtd > 0 ? totalVendas / qtd : 0;
+  const margem        = totalVendas > 0 ? Math.round(((totalVendas - totalPagar) / totalVendas) * 100) : 0;
+  const pix      = salesHist.filter(s => s.pay === 'PIX').reduce((a, s) => a + s.total, 0);
+  const dinheiro = salesHist.filter(s => s.pay === 'Dinheiro').reduce((a, s) => a + s.total, 0);
+  const cartao   = salesHist.filter(s => (s.pay||'').includes('Cartão')).reduce((a, s) => a + s.total, 0);
+  const fiado    = salesHist.filter(s => (s.pay||'').includes('Fiado') || (s.pay||'').includes('Crédito Loja')).reduce((a, s) => a + s.total, 0);
+  const pixPct   = totalVendas > 0 ? Math.round((pix/totalVendas)*100) : 0;
+  const dinPct   = totalVendas > 0 ? Math.round((dinheiro/totalVendas)*100) : 0;
+  const carPct   = totalVendas > 0 ? Math.round((cartao/totalVendas)*100) : 0;
+  const fiaPct   = totalVendas > 0 ? Math.round((fiado/totalVendas)*100) : 0;
+
+  const bar = (pct, color) =>
+    `<div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-top:5px">
+       <div style="height:100%;width:${pct}%;background:${color};border-radius:4px"></div>
+     </div>`;
+
+  const vendasRows = salesHist.slice(0, 20).map((s, i) =>
+    `<tr style="background:${i%2===0?'#fff':'#f8fafc'}">
+      <td style="padding:7px 10px;font-size:12px;color:#374151;font-weight:600">${s.codigo}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.items.split(',')[0]}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#6b7280">${s.date} ${s.time}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#6b7280">${s.pay}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#059669;font-weight:700;text-align:right">R$ ${fmt(s.total)}</td>
+    </tr>`).join('');
+
+  const contasRows = [
+    ...aPagar.map(c   => ({ desc: c.desc, venc: c.venc, val: c.val, tipo: 'A Pagar',   st: c.st,  cor: '#dc2626' })),
+    ...aReceber.map(c => ({ desc: c.desc, venc: c.venc, val: c.val, tipo: 'A Receber', st: c.st,  cor: '#059669' }))
+  ].slice(0, 15).map((c, i) =>
+    `<tr style="background:${i%2===0?'#fff':'#f8fafc'}">
+      <td style="padding:7px 10px;font-size:12px;color:#374151">${c.desc}</td>
+      <td style="padding:7px 10px;font-size:12px"><span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:${c.cor}18;color:${c.cor}">${c.tipo}</span></td>
+      <td style="padding:7px 10px;font-size:12px;color:#6b7280">${c.venc}</td>
+      <td style="padding:7px 10px;font-size:12px;color:${c.cor};font-weight:700;text-align:right">R$ ${fmt(c.val)}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<title>Relatório Financeiro — ${nomeEmp}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1f2937; background: #fff; font-size: 13px; }
+  @page { size: A4; margin: 18mm 16mm; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+  .page-header { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:14px; border-bottom:2.5px solid #1a56db; margin-bottom:20px; }
+  .company-name { font-size:20px; font-weight:800; color:#1a56db; letter-spacing:-.3px; }
+  .company-sub { font-size:11px; color:#6b7280; margin-top:3px; line-height:1.5; }
+  .report-title { text-align:right; }
+  .report-title h1 { font-size:15px; font-weight:700; color:#111827; }
+  .report-title p { font-size:11px; color:#6b7280; margin-top:2px; }
+
+  .section-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:#6b7280; margin:20px 0 10px; display:flex; align-items:center; gap:6px; }
+  .section-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:4px; }
+  .kpi { border:1px solid #e5e7eb; border-radius:10px; padding:12px 14px; }
+  .kpi-label { font-size:10px; color:#9ca3af; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+  .kpi-val { font-size:18px; font-weight:800; color:#111827; }
+  .kpi-sub { font-size:10px; color:#9ca3af; margin-top:3px; }
+  .kpi.green .kpi-val { color:#059669; }
+  .kpi.red .kpi-val { color:#dc2626; }
+  .kpi.blue .kpi-val { color:#1a56db; }
+  .kpi.amber .kpi-val { color:#d97706; }
+  .kpi.saldo { border-color:#1a56db; background:#eff6ff; }
+  .kpi.saldo .kpi-val { color:${saldo >= 0 ? '#059669' : '#dc2626'}; }
+
+  .pay-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .pay-row { border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px; }
+  .pay-name { font-size:12px; font-weight:600; color:#374151; display:flex; justify-content:space-between; }
+  .pay-amt { font-size:13px; font-weight:800; color:#111827; }
+
+  table { width:100%; border-collapse:collapse; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; }
+  thead { background:#1a56db; }
+  thead th { padding:9px 10px; font-size:11px; font-weight:700; color:#fff; text-align:left; letter-spacing:.3px; }
+  thead th:last-child { text-align:right; }
+
+  .footer { margin-top:28px; padding-top:12px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; }
+  .footer p { font-size:10px; color:#9ca3af; }
+  .badge-pos { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:${saldo>=0?'#d1fae5':'#fee2e2'}; color:${saldo>=0?'#059669':'#dc2626'}; }
+</style></head><body>
+
+  <!-- Cabeçalho -->
+  <div class="page-header">
+    <div>
+      <div class="company-name">${nomeEmp}</div>
+      <div class="company-sub">${[cnpjEmp, endEmp, telEmp].filter(Boolean).join(' · ')}</div>
+    </div>
+    <div class="report-title">
+      <h1>Relatório Financeiro</h1>
+      <p>Emitido em ${agora}</p>
+      <div style="margin-top:6px" class="badge-pos">${saldo >= 0 ? '▲ Saldo Positivo' : '▼ Saldo Negativo'}</div>
+    </div>
+  </div>
+
+  <!-- KPIs principais -->
+  <div class="section-title">Resumo do Período</div>
+  <div class="kpi-grid">
+    <div class="kpi saldo">
+      <div class="kpi-label">Saldo</div>
+      <div class="kpi-val">R$ ${fmt(saldo)}</div>
+      <div class="kpi-sub">resultado geral</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Total Vendido</div>
+      <div class="kpi-val">R$ ${fmt(totalVendas)}</div>
+      <div class="kpi-sub">${qtd} venda${qtd!==1?'s':''}</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">A Pagar</div>
+      <div class="kpi-val">R$ ${fmt(totalPagar)}</div>
+      <div class="kpi-sub">${aPagar.length} conta${aPagar.length!==1?'s':''}</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">A Receber</div>
+      <div class="kpi-val">R$ ${fmt(totalReceber)}</div>
+      <div class="kpi-sub">${aReceber.filter(i=>!i.recebido).length} pendente${aReceber.filter(i=>!i.recebido).length!==1?'s':''}</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid" style="margin-top:10px">
+    <div class="kpi amber">
+      <div class="kpi-label">Ticket Médio</div>
+      <div class="kpi-val">R$ ${fmt(ticket)}</div>
+      <div class="kpi-sub">por venda</div>
+    </div>
+    <div class="kpi ${margem>=0?'green':'red'}">
+      <div class="kpi-label">Margem</div>
+      <div class="kpi-val">${margem}%</div>
+      <div class="kpi-sub">vendas vs custos</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Despesas</div>
+      <div class="kpi-val">R$ ${fmt(totalDesp)}</div>
+      <div class="kpi-sub">${despesas.length} lançamento${despesas.length!==1?'s':''}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Crédito Loja</div>
+      <div class="kpi-val" style="color:#d97706">R$ ${fmt(fiado)}</div>
+      <div class="kpi-sub">${fiaPct}% das vendas</div>
+    </div>
+  </div>
+
+  <!-- Formas de pagamento -->
+  <div class="section-title" style="margin-top:22px">Formas de Pagamento</div>
+  <div class="pay-grid">
+    <div class="pay-row">
+      <div class="pay-name"><span>PIX</span><span class="pay-amt">R$ ${fmt(pix)}</span></div>
+      ${bar(pixPct,'#6366f1')}<div style="font-size:10px;color:#9ca3af;margin-top:3px">${pixPct}% do total</div>
+    </div>
+    <div class="pay-row">
+      <div class="pay-name"><span>Dinheiro</span><span class="pay-amt">R$ ${fmt(dinheiro)}</span></div>
+      ${bar(dinPct,'#10b981')}<div style="font-size:10px;color:#9ca3af;margin-top:3px">${dinPct}% do total</div>
+    </div>
+    <div class="pay-row">
+      <div class="pay-name"><span>Cartão</span><span class="pay-amt">R$ ${fmt(cartao)}</span></div>
+      ${bar(carPct,'#f59e0b')}<div style="font-size:10px;color:#9ca3af;margin-top:3px">${carPct}% do total</div>
+    </div>
+    <div class="pay-row">
+      <div class="pay-name"><span>Crédito Loja</span><span class="pay-amt">R$ ${fmt(fiado)}</span></div>
+      ${bar(fiaPct,'#f97316')}<div style="font-size:10px;color:#9ca3af;margin-top:3px">${fiaPct}% do total</div>
+    </div>
+  </div>
+
+  <!-- Últimas vendas -->
+  <div class="section-title" style="margin-top:22px">Últimas Vendas ${salesHist.length > 20 ? '(20 mais recentes)' : ''}</div>
+  ${salesHist.length ? `<table>
+    <thead><tr>
+      <th>Código</th><th>Produto</th><th>Data / Hora</th><th>Pagamento</th><th style="text-align:right">Valor</th>
+    </tr></thead>
+    <tbody>${vendasRows}</tbody>
+    <tfoot><tr style="background:#f8fafc;border-top:2px solid #e5e7eb">
+      <td colspan="4" style="padding:8px 10px;font-size:12px;font-weight:700;color:#374151">TOTAL</td>
+      <td style="padding:8px 10px;font-size:13px;font-weight:800;color:#059669;text-align:right">R$ ${fmt(totalVendas)}</td>
+    </tr></tfoot>
+  </table>` : '<p style="color:#9ca3af;font-size:12px;padding:12px 0">Nenhuma venda registrada.</p>'}
+
+  <!-- Contas -->
+  ${(aPagar.length || aReceber.length) ? `
+  <div class="section-title" style="margin-top:22px">Contas a Pagar / Receber</div>
+  <table>
+    <thead><tr><th>Descrição</th><th>Tipo</th><th>Vencimento</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${contasRows}</tbody>
+  </table>` : ''}
+
+  <!-- Rodapé -->
+  <div class="footer">
+    <p>${nomeEmp} · ${cnpjEmp}</p>
+    <p>Gestor Fácil v0.9 · Emitido em ${agora}</p>
+  </div>
+
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+  w.onload = () => { w.focus(); w.print(); };
+}
 // ========================================
 const pages = ['home', 'vendas', 'estoque', 'financeiro', 'clientes', 'config'];
 
@@ -1389,7 +1679,7 @@ function navigate(p) {
   if (tb) tb.style.display = (p === 'vendas' && hasItems) ? '' : 'none';
 
   if (p === 'financeiro') renderRelatorio();
-  if (p === 'config') { loadEmpresa(); loadPrefs(); loadSistema(); }
+  if (p === 'config') { loadEmpresaFromDB(); loadPrefs(); loadSistema(); }
 }
 
 // ========================================
@@ -1432,16 +1722,34 @@ function loadEmpresa() {
   try {
     const saved = JSON.parse(localStorage.getItem('cfg_empresa') || 'null');
     const d = saved || empresaDefaults;
-    document.getElementById('cfg-empresa-nome').textContent = d.nome || 'Empresa não configurada';
+    const nome = d.nome || 'Empresa não configurada';
+    document.getElementById('cfg-empresa-nome').textContent = nome;
     const subs = [d.cnpj ? 'CNPJ: ' + d.cnpj : 'CNPJ não informado', d.tel || ''].filter(Boolean);
     document.getElementById('cfg-empresa-sub').textContent = subs.join(' · ') || 'Toque para editar dados da empresa';
-    // preenche modal
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
     set('emp-nome', d.nome); set('emp-cnpj', d.cnpj); set('emp-tel', d.tel); set('emp-end', d.end);
+    // Atualiza nome na tela inicial
+    const greet = document.getElementById('greet-name');
+    if (greet) greet.textContent = nome;
   } catch(e) {}
 }
 
-function salvarEmpresa() {
+async function loadEmpresaFromDB() {
+  try {
+    const { data, error } = await sb.from('configuracoes').select('*').eq('chave', 'empresa').single();
+    if (!error && data?.valor) {
+      const d = JSON.parse(data.valor);
+      localStorage.setItem('cfg_empresa', JSON.stringify(d)); // cache local
+      loadEmpresa();
+    } else {
+      loadEmpresa(); // usa localStorage como fallback
+    }
+  } catch(e) {
+    loadEmpresa();
+  }
+}
+
+async function salvarEmpresa() {
   const nome = document.getElementById('emp-nome').value.trim();
   if (!nome) { showToast('⚠️ Informe o nome da empresa'); return; }
   const d = {
@@ -1450,7 +1758,15 @@ function salvarEmpresa() {
     tel:  document.getElementById('emp-tel').value.trim(),
     end:  document.getElementById('emp-end').value.trim()
   };
+
+  // Salva localmente (funciona com arquivo local)
   localStorage.setItem('cfg_empresa', JSON.stringify(d));
+
+  // Tenta salvar no Supabase em segundo plano (sem bloquear nem mostrar erro)
+  sb.from('configuracoes')
+    .upsert({ chave: 'empresa', valor: JSON.stringify(d) }, { onConflict: 'chave' })
+    .then(({ error }) => { if (error) console.info('[empresa] Supabase indisponível, usando localStorage.'); });
+
   loadEmpresa();
   closeModal('modal-empresa');
   showToast('✅ Dados da empresa salvos!');
@@ -1840,40 +2156,56 @@ async function finalizarVenda() {
   const cliSel  = isFiado ? clientes.find(x => x.id === fiadoCliId) : null;
   const codigo  = '#' + String(Date.now()).slice(-4).padStart(4, '0');
 
-  // ── Montar comprovante ──
+  // ── Montar comprovante fiscal ──
+  const empresa = JSON.parse(localStorage.getItem('cfg_empresa') || '{}');
+  const nomeEmp = (empresa.nome || 'MERCADINHO DO JOÃO').toUpperCase();
+
+  const rcLogo = document.getElementById('rc-logo'); if (rcLogo) rcLogo.textContent = nomeEmp;
+  const rcEmpInfo = document.getElementById('rc-empresa-info');
+  if (rcEmpInfo) rcEmpInfo.innerHTML = [empresa.cnpj ? 'CNPJ: ' + empresa.cnpj : '', empresa.end || '', empresa.tel || ''].filter(Boolean).map(l => `<div>${l}</div>`).join('');
+  const rcFoot = document.getElementById('rc-foot-empresa'); if (rcFoot) rcFoot.textContent = empresa.tel || '';
+  const rcCod  = document.getElementById('rc-cod');  if (rcCod)  rcCod.textContent  = 'Nº ' + codigo;
+
   const rcItens = items.map(([id, q]) => {
     const p = products.find(x => x.id == id);
-    return p ? `<div class="rline"><span>${p.name} x${q}</span><span>R$ ${fmt(p.price * q)}</span></div>` : '';
+    if (!p) return '';
+    return `<div class="rline" style="flex-direction:column;padding:4px 16px">
+      <div style="display:flex;justify-content:space-between;width:100%"><span style="font-weight:600">${p.name}</span><span style="font-weight:700">R$ ${fmt(p.price * q)}</span></div>
+      <div style="color:#888;font-size:11px">${q} un × R$ ${fmt(p.price)}</div>
+    </div>`;
   }).join('');
 
   document.getElementById('rc-items').innerHTML = rcItens
-    + (disc > 0 ? `<div class="rline" style="color:var(--success)"><span>Desconto</span><span>− R$ ${fmt(disc)}</span></div>` : '');
+    + (disc > 0 ? `<div class="rline" style="color:#059669"><span>Desconto</span><span>− R$ ${fmt(disc)}</span></div>` : '');
 
   document.getElementById('rc-total').textContent = 'R$ ' + fmt(total);
-  document.getElementById('rc-date').textContent  = new Date().toLocaleString('pt-BR');
+  document.getElementById('rc-date').textContent  = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
   // ── Bloco de pagamento contextual ──
   let payBlock = '';
   if (payMethod === 'PIX') {
-    payBlock = `<div class="rline" style="justify-content:center"><span style="font-weight:700;color:var(--primary);font-size:15px">PIX</span></div>`;
+    payBlock = `<div class="rline"><span style="color:#555">Forma</span><span style="font-weight:700;color:#4f46e5">PIX ∙ Instantâneo</span></div>`;
   } else if (isDinheiro) {
-    payBlock = `<div class="rline"><span style="color:var(--text2)">Dinheiro</span><span style="font-weight:600">—</span></div>`
-      + (recebido > 0 ? `<div class="rline"><span style="color:var(--text2)">Recebido</span><span style="font-weight:600">R$ ${fmt(recebido)}</span></div>` : '')
-      + (troco > 0    ? `<div class="rline"><span style="color:var(--text2)">Troco</span><span style="font-weight:700;color:var(--success)">R$ ${fmt(troco)}</span></div>` : '');
+    payBlock = `<div class="rline"><span style="color:#555">Forma</span><span style="font-weight:700">Dinheiro</span></div>`
+      + (recebido > 0 ? `<div class="rline"><span style="color:#555">Valor recebido</span><span style="font-weight:600">R$ ${fmt(recebido)}</span></div>` : '')
+      + (troco > 0    ? `<div class="rline"><span style="color:#555">Troco</span><span style="font-weight:700;color:#059669">R$ ${fmt(troco)}</span></div>`
+                      : `<div class="rline"><span style="color:#555">Troco</span><span>—</span></div>`);
   } else if (isCartao) {
-    payBlock = `<div class="rline"><span style="color:var(--text2)">Cartão ${cardType}</span><span style="font-weight:600">${nParc > 1 ? `Parcelado` : 'À vista'}</span></div>`
-      + (nParc > 1 ? `<div class="rline"><span style="color:var(--text2)">Parcelamento</span><span style="font-weight:700;color:var(--primary)">${nParc}x de R$ ${fmt(total/nParc)}</span></div>` : '');
+    payBlock = `<div class="rline"><span style="color:#555">Forma</span><span style="font-weight:700;color:#1d4ed8">Cartão ${cardType}</span></div>`
+      + `<div class="rline"><span style="color:#555">Bandeira</span><span style="font-weight:600">${cardType}</span></div>`
+      + `<div class="rline"><span style="color:#555">Parcelamento</span><span style="font-weight:700">${nParc > 1 ? `${nParc}x de R$ ${fmt(total / nParc)}` : 'À vista'}</span></div>`;
   } else if (isFiado) {
-    // BUG 1 FIX: exibe Crédito Loja, cliente, total e status Pendente no comprovante
-    payBlock = `<div class="rline"><span style="color:var(--text2)">Pagamento</span><span style="font-weight:700;color:var(--primary)">Crédito Loja</span></div>`
-      + (cliSel ? `<div class="rline"><span style="color:var(--text2)">Cliente</span><span style="font-weight:700;color:var(--primary)">${cliSel.name}</span></div>` : '')
-      + `<div class="rline"><span style="color:var(--text2)">Total</span><span style="font-weight:700">R$ ${fmt(total)}</span></div>`
-      + `<div class="rline"><span style="color:var(--text2)">Status</span><span style="font-weight:700;color:var(--warning)">Pendente</span></div>`
-      + `<div style="border-top:1px dashed var(--border);margin:8px 0;text-align:center;font-size:11px;color:var(--text3);padding-top:6px">═══════════════════</div>`;
+    payBlock = `<div class="rline"><span style="color:#555">Forma</span><span style="font-weight:700;color:#d97706">Crédito Loja</span></div>`
+      + (cliSel ? `<div class="rline"><span style="color:#555">Cliente</span><span style="font-weight:700">${cliSel.name}</span></div>` : '')
+      + `<div class="rline"><span style="color:#555">Status</span><span style="font-weight:700;color:#d97706">Pendente</span></div>`;
+  } else {
+    payBlock = `<div class="rline"><span style="color:#555">Forma</span><span style="font-weight:700">${payMethod}</span></div>`;
   }
-  document.getElementById('rc-pay-block').innerHTML = payBlock;
 
-  // BUG 1 FIX: salva venda ANTES de abrir o modal, garantindo fluxo correto
+  // ✅ Injeta no comprovante ANTES de resetar variáveis
+  const rcPayEl = document.getElementById('rc-pay-block');
+  if (rcPayEl) rcPayEl.innerHTML = payBlock;
+
   // 1. Salvar venda
   const row = { codigo, itens: itensDesc.join(', '), total, desconto: disc, pagamento: pagLabel, criado_em: new Date().toISOString() };
   const { error } = await sb.from('vendas').insert([row]);
@@ -2006,9 +2338,9 @@ async function dbLoadFinanceiro() {
     sb.from('contas_receber').select('*').order('vencimento'),
     sb.from('despesas').select('*').order('criado_em', { ascending: false }).limit(30)
   ]);
-  aPagar   = (resPagar.data   || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente', pago:     !!r.pago     }));
-  aReceber = (resReceber.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), st: r.status || 'pendente', recebido: !!r.recebido }));
-  despesas = (resDesp.data    || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em),  cat: r.categoria || 'Outros', pago:    !!r.pago     }));
+  aPagar   = (resPagar.data   || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), vencISO: r.vencimento || null, st: r.status || 'pendente', pago:     r.status === 'pago'     }));
+  aReceber = (resReceber.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), vencISO: r.vencimento || null, st: r.status || 'pendente', recebido: r.status === 'recebido' }));
+  despesas = (resDesp.data    || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em),  vencISO: r.vencimento || null, cat: r.categoria || 'Outros', pago:    r.status === 'pago'     }));
   renderFinanceiro();
   renderHomeDashboard();
   renderRelatorio();
@@ -2359,37 +2691,118 @@ function renderFinanceiro() {
   if (fc) fc.innerHTML = heights.map((h, i) => `<div style="flex:1;border-radius:3px 3px 0 0;background:${i === heights.length - 1 ? 'var(--primary)' : 'var(--primary-light)'};height:${h}%"></div>`).join('');
 
   const pEl = document.getElementById('pagar-list');
-  if (pEl) pEl.innerHTML = aPagar.length ? aPagar.map(i => `
+  if (pEl) pEl.innerHTML = aPagar.length ? aPagar.map(i => {
+    const alerta = vencAlerta(i.vencISO, i.pago);
+    return `
     <div class="list-item" style="cursor:pointer;transition:.15s;${i.pago ? 'opacity:.55' : ''}" onclick="openBaixaModal('pagar',${i.id})" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-      <div class="list-icon ${i.pago ? 'gray' : i.st === 'atrasado' ? 'red' : 'warn'}"><i class="ti ti-${i.pago ? 'circle-check' : i.st === 'atrasado' ? 'alert-circle' : 'clock'}"></i></div>
-      <div class="list-body"><div class="list-title">${i.desc}</div><div class="list-sub">Vence: ${i.venc}</div></div>
+      <div class="list-icon ${i.pago ? 'gray' : alerta.iconeClasse}"><i class="ti ti-${i.pago ? 'circle-check' : alerta.icone}"></i></div>
+      <div class="list-body">
+        <div class="list-title">${i.desc}</div>
+        <div class="list-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>Vence: ${i.venc}</span>
+          ${!i.pago && alerta.tag ? alerta.tag : ''}
+        </div>
+      </div>
       <div class="list-right">
         <div class="list-amt red">R$ ${fmt(i.val)}</div>
-        <span class="badge ${i.pago ? 'green' : i.st === 'atrasado' ? 'red' : 'warn'}">${i.pago ? 'pago' : i.st}</span>
+        <span class="badge ${i.pago ? 'green' : alerta.badgeClasse}">${i.pago ? 'pago' : alerta.label}</span>
       </div>
-    </div>`).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a pagar</div>';
+    </div>`;
+  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a pagar</div>';
 
   const rEl = document.getElementById('receber-list');
-  if (rEl) rEl.innerHTML = aReceber.length ? aReceber.map(i => `
+  if (rEl) rEl.innerHTML = aReceber.length ? aReceber.map(i => {
+    const alerta = vencAlerta(i.vencISO, i.recebido);
+    return `
     <div class="list-item" style="cursor:pointer;transition:.15s;${i.recebido ? 'opacity:.55' : ''}" onclick="openBaixaModal('receber',${i.id})" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-      <div class="list-icon ${i.recebido ? 'gray' : i.st === 'atrasado' ? 'red' : 'green'}"><i class="ti ti-${i.recebido ? 'circle-check' : 'arrow-up-circle'}"></i></div>
-      <div class="list-body"><div class="list-title">${i.desc}</div><div class="list-sub">Vence: ${i.venc}</div></div>
+      <div class="list-icon ${i.recebido ? 'gray' : alerta.iconeClasse}"><i class="ti ti-${i.recebido ? 'circle-check' : alerta.icone}"></i></div>
+      <div class="list-body">
+        <div class="list-title">${i.desc}</div>
+        <div class="list-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>Vence: ${i.venc}</span>
+          ${!i.recebido && alerta.tag ? alerta.tag : ''}
+        </div>
+      </div>
       <div class="list-right">
         <div class="list-amt green">R$ ${fmt(i.val)}</div>
-        <span class="badge ${i.recebido ? 'green' : i.st === 'atrasado' ? 'red' : 'blue'}">${i.recebido ? 'recebido' : i.st}</span>
+        <span class="badge ${i.recebido ? 'green' : alerta.badgeClasse}">${i.recebido ? 'recebido' : alerta.label}</span>
       </div>
-    </div>`).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a receber</div>';
+    </div>`;
+  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a receber</div>';
 
   const dEl = document.getElementById('desp-list');
-  if (dEl) dEl.innerHTML = despesas.length ? despesas.map(i => `
+  if (dEl) dEl.innerHTML = despesas.length ? despesas.map(i => {
+    const alerta = vencAlerta(i.vencISO, i.pago);
+    return `
     <div class="list-item" style="cursor:pointer;transition:.15s;${i.pago ? 'opacity:.55' : ''}" onclick="openBaixaModal('despesa',${i.id})" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
-      <div class="list-icon ${i.pago ? 'gray' : 'red'}"><i class="ti ti-${i.pago ? 'circle-check' : 'minus-circle'}"></i></div>
-      <div class="list-body"><div class="list-title">${i.desc}</div><div class="list-sub">${i.cat} · ${i.data}</div></div>
+      <div class="list-icon ${i.pago ? 'gray' : alerta.iconeClasse}"><i class="ti ti-${i.pago ? 'circle-check' : alerta.icone}"></i></div>
+      <div class="list-body">
+        <div class="list-title">${i.desc}</div>
+        <div class="list-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>${i.cat} · ${i.data}</span>
+          ${!i.pago && alerta.tag ? alerta.tag : ''}
+        </div>
+      </div>
       <div class="list-right">
         <div class="list-amt red">− R$ ${fmt(i.val)}</div>
-        ${i.pago ? '<span class="badge green">pago</span>' : '<i class="ti ti-chevron-right" style="color:var(--text3);font-size:15px;margin-top:4px"></i>'}
+        ${i.pago ? '<span class="badge green">pago</span>' : `<span class="badge ${alerta.badgeClasse}">${alerta.label}</span>`}
       </div>
-    </div>`).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma despesa registrada</div>';
+    </div>`;
+  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma despesa registrada</div>';
+
+  // Banner de alertas no topo do financeiro
+  checkVencimentos();
+}
+
+// ── Calcula alerta de vencimento para um item ──
+function vencAlerta(vencISO, jaFeito) {
+  if (jaFeito || !vencISO) return { icone: 'clock', iconeClasse: 'warn', badgeClasse: 'warn', label: 'pendente', tag: '' };
+  const hoje  = new Date(); hoje.setHours(0,0,0,0);
+  const venc  = new Date(vencISO + 'T00:00:00');
+  const dias  = Math.round((venc - hoje) / 86400000);
+  if (dias < 0)  return { icone: 'alert-circle', iconeClasse: 'red',  badgeClasse: 'red',  label: `atrasado ${Math.abs(dias)}d`, tag: `<span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-alert-circle" style="font-size:11px"></i>Atrasado ${Math.abs(dias)}d</span>` };
+  if (dias === 0) return { icone: 'clock-exclamation', iconeClasse: 'red',  badgeClasse: 'red',  label: 'vence hoje', tag: `<span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-clock-exclamation" style="font-size:11px"></i>Vence hoje!</span>` };
+  if (dias <= 3)  return { icone: 'clock-exclamation', iconeClasse: 'red',  badgeClasse: 'red',  label: `${dias}d restantes`, tag: `<span style="background:#fff7ed;color:#ea580c;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-flame" style="font-size:11px"></i>${dias}d restantes</span>` };
+  if (dias <= 7)  return { icone: 'clock',             iconeClasse: 'warn', badgeClasse: 'warn', label: `${dias}d restantes`, tag: `<span style="background:#fffbeb;color:#d97706;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-clock" style="font-size:11px"></i>${dias}d restantes</span>` };
+  return { icone: 'clock', iconeClasse: 'warn', badgeClasse: 'warn', label: 'pendente', tag: '' };
+}
+
+// ── Banner de alertas urgentes no topo do financeiro ──
+function checkVencimentos() {
+  const el = document.getElementById('fin-alertas');
+  if (!el) return;
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const urgentes = [];
+
+  [...aPagar.filter(i => !i.pago), ...aReceber.filter(i => !i.recebido), ...despesas.filter(i => !i.pago)]
+    .forEach(i => {
+      if (!i.vencISO) return;
+      const venc = new Date(i.vencISO + 'T00:00:00');
+      const dias = Math.round((venc - hoje) / 86400000);
+      if (dias <= 3) urgentes.push({ ...i, dias });
+    });
+
+  if (!urgentes.length) { el.style.display = 'none'; return; }
+
+  urgentes.sort((a, b) => a.dias - b.dias);
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,#dc2626,#f87171);border-radius:14px;margin:12px 16px 0;padding:14px 16px;animation:pulse 2s infinite">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <i class="ti ti-bell-ringing" style="color:#fff;font-size:18px"></i>
+        <span style="color:#fff;font-weight:700;font-size:14px">⚠️ ${urgentes.length} vencimento${urgentes.length>1?'s':''} urgente${urgentes.length>1?'s':''}</span>
+      </div>
+      ${urgentes.slice(0,3).map(i => `
+        <div style="background:rgba(255,255,255,.15);border-radius:9px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:#fff;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${i.desc}</div>
+            <div style="color:rgba(255,255,255,.8);font-size:11px;margin-top:1px">${i.dias < 0 ? `Atrasado ${Math.abs(i.dias)} dia${Math.abs(i.dias)>1?'s':''}` : i.dias === 0 ? 'Vence hoje!' : `Vence em ${i.dias} dia${i.dias>1?'s':''}`}</div>
+          </div>
+          <span style="color:#fff;font-family:Sora,sans-serif;font-size:13px;font-weight:700;flex-shrink:0;margin-left:10px">R$ ${fmt(i.val)}</span>
+        </div>`).join('')}
+      ${urgentes.length > 3 ? `<div style="color:rgba(255,255,255,.75);font-size:11px;text-align:center;margin-top:4px">+${urgentes.length-3} mais</div>` : ''}
+    </div>`;
 }
 
 // ========================================
@@ -2591,37 +3004,37 @@ function openBaixaModal(tipo, id) {
 
 async function confirmarBaixa() {
   const tipo = document.getElementById('baixa-tipo').value;
-  const id   = parseInt(document.getElementById('baixa-id').value, 10); // garante número inteiro
-  let tabela, updatePayload, lista;
+  const id   = parseInt(document.getElementById('baixa-id').value, 10);
+  let tabela, updatePayload, lista, campoLocal;
 
   if (tipo === 'pagar') {
     tabela        = 'contas_pagar';
-    updatePayload = { pago: true, status: 'pago' };
+    updatePayload = { status: 'pago' };       // única coluna que existe no banco
     lista         = aPagar;
+    campoLocal    = 'pago';
   } else if (tipo === 'receber') {
     tabela        = 'contas_receber';
-    updatePayload = { recebido: true, status: 'recebido' };
+    updatePayload = { status: 'recebido' };   // única coluna que existe no banco
     lista         = aReceber;
+    campoLocal    = 'recebido';
   } else if (tipo === 'despesa') {
     tabela        = 'despesas';
-    updatePayload = { pago: true };
+    updatePayload = { status: 'pago' };
     lista         = despesas;
+    campoLocal    = 'pago';
   }
-
-  console.log('[confirmarBaixa] tabela:', tabela, '| id:', id, '| payload:', updatePayload);
 
   const { error } = await sb.from(tabela).update(updatePayload).eq('id', id);
 
   if (error) {
     console.error('[confirmarBaixa] Erro Supabase:', error);
     showToast('⚠️ Erro ao dar baixa: ' + (error.message || JSON.stringify(error)));
-    // fallback local para não travar o usuário
-    const item = lista.find(x => x.id === id);
-    if (item) Object.assign(item, updatePayload);
-    closeModal('modal-baixa');
-    renderFinanceiro();
     return;
   }
+
+  // Atualiza localmente também para refletir na UI sem recarregar
+  const item = lista.find(x => x.id === id);
+  if (item) { item[campoLocal] = true; item.st = updatePayload.status; }
 
   closeModal('modal-baixa');
   showToast('✅ Baixa registrada com sucesso!');
@@ -2658,7 +3071,8 @@ async function init() {
       dbLoadProducts(),
       dbLoadVendas(),
       dbLoadClientes(),
-      dbLoadFinanceiro()
+      dbLoadFinanceiro(),
+      loadEmpresaFromDB()
     ]);
     showToast('✅ Dados carregados!');
   } catch (e) {
