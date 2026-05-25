@@ -1755,7 +1755,7 @@ function navigate(p) {
   // Total bar só aparece na aba Vendas E com itens no carrinho
   const hasItems = Object.values(cart).some(q => q > 0);
   const tb = document.getElementById('total-bar');
-  if (tb) tb.style.display = (p === 'vendas' && hasItems) ? '' : 'none';
+  if (tb) tb.style.display = (p === 'vendas' && hasItems) ? 'flex' : 'none';
 
   if (p === 'financeiro') renderRelatorio();
   if (p === 'config') { loadEmpresaFromDB(); loadPrefs(); loadSistema(); }
@@ -2597,14 +2597,13 @@ function updateTotal() {
   const total = Math.max(0, sub - disc);
   const el = document.getElementById('total-val'); if (el) el.textContent = 'R$ ' + fmt(total);
 
-  // Atualiza cálculos dependentes do total
   if (payMethod === 'Dinheiro') calcTroco();
   if (payMethod === 'Cartão' && parcelar) calcParcelas();
 
   const hasItems = Object.values(cart).some(q => q > 0);
-  const activePage = document.querySelector('.page.active')?.id;
+  const onVendas = !!document.getElementById('nav-vendas')?.classList.contains('active');
   const tb = document.getElementById('total-bar');
-  if (tb) tb.style.display = (hasItems && activePage === 'page-vendas') ? '' : 'none';
+  if (tb) tb.style.display = (hasItems && onVendas) ? 'flex' : 'none';
 }
 
 // ========================================
@@ -3183,7 +3182,6 @@ async function deleteBaixa() {
 // ========================================
 // INIT
 // ========================================
-document.getElementById('total-bar').style.display = 'none';
 setGreeting();
 
 async function init() {
