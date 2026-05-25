@@ -266,7 +266,48 @@ select.inp{cursor:pointer}
 .rc-divider{border:none;border-top:1px dashed #ccc;margin:4px 16px}
 .rc-section-lbl{text-align:center;font-size:10px;color:#888;font-weight:700;letter-spacing:1px;padding:6px 16px 2px;text-transform:uppercase}
 
-/* ===== RELATÓRIO ===== */
+/* ===== POLIMENTO — microinterações ===== */
+.quick-btn{transition:transform .15s,box-shadow .15s,background .15s}
+.quick-btn:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(0,0,0,.10)}
+.list-item{transition:background .15s}
+.card{transition:box-shadow .15s}
+.pay-btn{transition:all .15s}
+.pay-btn:hover{transform:scale(1.05);border-color:var(--primary)}
+.stat-card{transition:transform .15s,box-shadow .15s}
+.stat-card:hover{transform:scale(1.02);box-shadow:0 4px 14px rgba(0,0,0,.09)}
+.stat-card.clickable{cursor:pointer}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-outline:hover{background:var(--primary-light)}
+.icon-btn:hover{background:var(--surface3);color:var(--text)}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 24px;gap:12px;text-align:center}
+.empty-state .empty-icon{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px}
+.empty-state .empty-title{font-size:15px;font-weight:700;color:var(--text)}
+.empty-state .empty-sub{font-size:13px;color:var(--text3);max-width:220px;line-height:1.5}
+.empty-state .empty-action{margin-top:6px;padding:10px 22px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.empty-state .empty-action:hover{filter:brightness(1.1)}
+
+/* ===== HOJE SECTION (dashboard) ===== */
+.hoje-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
+.hoje-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;gap:6px}
+.hoje-card:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(0,0,0,.10)}
+.hoje-card:active{transform:scale(.97)}
+.hoje-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:2px}
+.hoje-card-val{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+.hoje-card-lbl{font-size:11px;color:var(--text2);font-weight:500}
+.hoje-card-sub{font-size:10px;color:var(--text3)}
+
+/* ===== FIRST RUN ===== */
+.first-run{margin:16px;background:linear-gradient(135deg,var(--primary),#3b82f6);border-radius:var(--radius);padding:22px 20px;color:#fff;text-align:center}
+.first-run h2{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.first-run p{font-size:13px;opacity:.85;margin-bottom:16px;line-height:1.5}
+.first-run-btn{background:#fff;color:var(--primary);border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.first-run-btn:hover{transform:scale(1.04)}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(10px);background:rgba(31,41,55,.92);color:#fff;padding:9px 18px;border-radius:40px;font-size:12px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;z-index:999;pointer-events:none;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.18);max-width:85vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .rel-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
 .rel-row strong{font-family:'Sora',sans-serif}
 .rel-row strong.green{color:var(--success)}
@@ -284,10 +325,6 @@ select.inp{cursor:pointer}
 
 /* ===== AVATAR ===== */
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-family:'Sora',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-
-/* ===== TOAST ===== */
-.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-6px);background:var(--text);color:var(--surface);padding:11px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;z-index:300;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar{width:3px}
@@ -514,18 +551,28 @@ select.inp{cursor:pointer}
     <div class="greet-name" id="greet-name">Mercadinho do João</div>
   </div>
 
+  <!-- First-run banner (oculto por padrão, ativado por JS) -->
+  <div id="first-run-banner" style="display:none">
+    <div class="first-run">
+      <h2>🚀 Bem-vindo ao Gestor Fácil!</h2>
+      <p>Configure sua empresa, cadastre produtos e registre sua primeira venda em minutos.</p>
+      <button class="first-run-btn" onclick="navigate('config');openModal('modal-empresa')">Começar agora →</button>
+    </div>
+  </div>
+
+  <!-- KPIs principais -->
   <div class="stat-grid">
-    <div class="stat-card">
+    <div class="stat-card clickable" onclick="navigate('vendas')">
       <div class="stat-lbl"><i class="ti ti-coin"></i> Caixa hoje</div>
       <div class="stat-val blue num" id="dash-caixa">R$ 0,00</div>
       <div class="stat-chg up" id="dash-caixa-sub">carregando...</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card clickable" onclick="navigate('vendas')">
       <div class="stat-lbl"><i class="ti ti-shopping-cart"></i> Total vendas</div>
       <div class="stat-val green num" id="dash-vendas">R$ 0,00</div>
       <div class="stat-chg up" id="dash-vendas-sub">0 pedidos hoje</div>
     </div>
-    <div class="stat-card wide">
+    <div class="stat-card wide clickable" onclick="navigate('vendas')">
       <div>
         <div class="stat-lbl">Vendas da semana</div>
         <div class="stat-val num" id="dash-semana" style="font-size:20px">R$ 0,00</div>
@@ -542,11 +589,42 @@ select.inp{cursor:pointer}
     </div>
   </div>
 
+  <!-- Alerta estoque -->
   <div class="alert-strip" id="dash-alert-strip" style="display:none" onclick="navigate('estoque')">
     <i class="ti ti-alert-triangle"></i>
     <div class="alert-txt" id="dash-alert-txt">⚠️ Verificando estoque...</div>
   </div>
 
+  <!-- ── HOJE ── -->
+  <div class="section"><div class="sec-title">📌 Hoje</div></div>
+  <div class="hoje-grid">
+    <div class="hoje-card" onclick="navigate('estoque')">
+      <div class="hoje-card-icon" style="background:var(--warning-light);color:var(--warning)"><i class="ti ti-packages"></i></div>
+      <div class="hoje-card-val" id="hoje-estoque-baixo" style="color:var(--warning)">0</div>
+      <div class="hoje-card-lbl">Estoque baixo</div>
+      <div class="hoje-card-sub" id="hoje-estoque-sub">Verificando...</div>
+    </div>
+    <div class="hoje-card" onclick="navigate('financeiro')">
+      <div class="hoje-card-icon" style="background:var(--success-light);color:var(--success)"><i class="ti ti-arrow-up-circle"></i></div>
+      <div class="hoje-card-val" id="hoje-receber" style="color:var(--success)">R$ 0</div>
+      <div class="hoje-card-lbl">A receber</div>
+      <div class="hoje-card-sub" id="hoje-receber-sub">pendente</div>
+    </div>
+    <div class="hoje-card" onclick="navigate('financeiro')">
+      <div class="hoje-card-icon" style="background:var(--danger-light);color:var(--danger)"><i class="ti ti-clock-exclamation"></i></div>
+      <div class="hoje-card-val" id="hoje-vencimento" style="font-size:13px;color:var(--danger)">—</div>
+      <div class="hoje-card-lbl">Próx. vencimento</div>
+      <div class="hoje-card-sub" id="hoje-venc-sub">a pagar</div>
+    </div>
+    <div class="hoje-card" onclick="navigate('vendas')">
+      <div class="hoje-card-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-trending-up"></i></div>
+      <div class="hoje-card-val" id="hoje-vendas-qtd" style="color:var(--primary)">0</div>
+      <div class="hoje-card-lbl">Vendas hoje</div>
+      <div class="hoje-card-sub" id="hoje-vendas-sub">registradas</div>
+    </div>
+  </div>
+
+  <!-- Ações rápidas -->
   <div class="section"><div class="sec-title">Ações rápidas</div></div>
   <div class="quick-grid">
     <button class="quick-btn accent" onclick="navigate('vendas');resetVenda()">
@@ -1370,11 +1448,12 @@ function fmtDate(d) { return new Date(d).toLocaleDateString('pt-BR'); }
 function fmtTime(d) { return new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }
 function todayISO() { return new Date().toISOString().split('T')[0]; }
 
-function showToast(msg) {
+function showToast(msg, dur = 2800) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
 }
 
 function showLoading(elId, msg = '🔄 Carregando...') {
@@ -2384,13 +2463,10 @@ function renderHomeDashboard() {
   const totalVendas = vendasHoje.reduce((a, s) => a + s.total, 0);
   const qtdVendas = vendasHoje.length;
 
-  // Caixa hoje = total das vendas concluídas no dia (sem descontar despesas)
   document.getElementById('dash-caixa').textContent = 'R$ ' + fmt(totalVendas);
   document.getElementById('dash-caixa-sub').textContent = qtdVendas > 0 ? `↑ ${qtdVendas} venda${qtdVendas !== 1 ? 's' : ''} hoje` : 'Nenhuma venda hoje';
   document.getElementById('dash-vendas').textContent = 'R$ ' + fmt(totalVendas);
   document.getElementById('dash-vendas-sub').textContent = qtdVendas + ' pedido' + (qtdVendas !== 1 ? 's' : '') + ' hoje';
-
-
 
   const semana = salesHist.slice(0, 7).reduce((a, s) => a + s.total, 0);
   document.getElementById('dash-semana').textContent = 'R$ ' + fmt(semana);
@@ -2401,6 +2477,7 @@ function renderHomeDashboard() {
   document.getElementById('dash-mini-bars').innerHTML = padded.map((v, i) =>
     `<div class="mbar ${i === padded.length - 1 ? 'active' : ''}" style="height:${Math.max(8, Math.round((v / maxVal) * 100))}%"></div>`).join('');
 
+  // Alerta de estoque
   const low = products.filter(p => p.qty <= p.min);
   const strip = document.getElementById('dash-alert-strip');
   if (low.length > 0) {
@@ -2409,12 +2486,57 @@ function renderHomeDashboard() {
   } else {
     strip.style.display = 'none';
   }
+
+  // ── Seção HOJE ──
+  const hojeEstoque = document.getElementById('hoje-estoque-baixo');
+  const hojeEstoqueSub = document.getElementById('hoje-estoque-sub');
+  if (hojeEstoque) hojeEstoque.textContent = low.length;
+  if (hojeEstoqueSub) hojeEstoqueSub.textContent = low.length > 0 ? `produto${low.length>1?'s':''} abaixo do mínimo` : 'tudo em dia ✓';
+  if (hojeEstoque) hojeEstoque.style.color = low.length > 0 ? 'var(--warning)' : 'var(--success)';
+
+  const pendRec = aReceber.filter(i => !i.recebido);
+  const totalRec = pendRec.reduce((a,i) => a+i.val, 0);
+  const hojeRec = document.getElementById('hoje-receber');
+  const hojeRecSub = document.getElementById('hoje-receber-sub');
+  if (hojeRec) hojeRec.textContent = 'R$ ' + fmt(totalRec);
+  if (hojeRecSub) hojeRecSub.textContent = `${pendRec.length} pendente${pendRec.length !== 1 ? 's' : ''}`;
+
+  const pendPag = aPagar.filter(i => !i.pago && i.vencISO).sort((a,b) => a.vencISO.localeCompare(b.vencISO));
+  const hojeVenc = document.getElementById('hoje-vencimento');
+  const hojeVencSub = document.getElementById('hoje-venc-sub');
+  if (pendPag.length > 0) {
+    const prox = pendPag[0];
+    const dias = Math.round((new Date(prox.vencISO+'T00:00:00') - new Date().setHours(0,0,0,0)) / 86400000);
+    if (hojeVenc) { hojeVenc.textContent = dias < 0 ? `Atrasado ${Math.abs(dias)}d` : dias === 0 ? 'Hoje!' : `${dias}d`; hojeVenc.style.color = dias <= 0 ? 'var(--danger)' : dias <= 3 ? 'var(--warning)' : 'var(--text)'; }
+    if (hojeVencSub) hojeVencSub.textContent = prox.desc.length > 20 ? prox.desc.slice(0,20)+'…' : prox.desc;
+  } else {
+    if (hojeVenc) { hojeVenc.textContent = '✓ Em dia'; hojeVenc.style.color = 'var(--success)'; hojeVenc.style.fontSize = '13px'; }
+    if (hojeVencSub) hojeVencSub.textContent = 'sem vencimentos';
+  }
+
+  const hojeVendasQtd = document.getElementById('hoje-vendas-qtd');
+  const hojeVendasSub = document.getElementById('hoje-vendas-sub');
+  if (hojeVendasQtd) hojeVendasQtd.textContent = qtdVendas;
+  if (hojeVendasSub) hojeVendasSub.textContent = qtdVendas > 0 ? `R$ ${fmt(totalVendas)} faturado` : 'nenhuma ainda';
+
+  // ── First-run: só mostra se realmente não há produtos E não há vendas E empresa não foi configurada ──
+  const banner = document.getElementById('first-run-banner');
+  if (banner) {
+    const empSalva = localStorage.getItem('cfg_empresa');
+    const isFirstRun = products.length === 0 && salesHist.length === 0 && !empSalva;
+    banner.style.display = isFirstRun ? 'block' : 'none';
+  }
+
+  // Atualiza nome da empresa no greeting
+  const emp = JSON.parse(localStorage.getItem('cfg_empresa') || '{}');
+  const nomeEl = document.getElementById('greet-name');
+  if (nomeEl && emp.nome) nomeEl.textContent = emp.nome;
 }
 
 function renderHomeRecent() {
   const el = document.getElementById('home-recent');
   if (!el) return;
-  if (!salesHist.length) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma venda registrada ainda</div>'; return; }
+  if (!salesHist.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon" style="background:var(--success-light);color:var(--success)"><i class="ti ti-receipt"></i></div><div class="empty-title">Nenhuma venda hoje</div><div class="empty-sub">Comece registrando sua primeira venda</div><button class="empty-action" onclick="navigate('vendas');resetVenda()">+ Nova venda</button></div>`; return; }
   el.innerHTML = salesHist.slice(0, 5).map(s => `
     <div class="list-item">
       <div class="list-icon green"><i class="ti ti-receipt"></i></div>
@@ -2442,7 +2564,7 @@ function resetVenda() {
 function renderSaleProds(q = '') {
   const f = products.filter(p => p.qty > 0 && p.name.toLowerCase().includes(q.toLowerCase()));
   const el = document.getElementById('sale-prod-list');
-  if (!f.length) { el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3)">Nenhum produto disponível</div>'; return; }
+  if (!f.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-packages"></i></div><div class="empty-title">Nenhum produto disponível</div><div class="empty-sub">Cadastre produtos no Estoque para começar a vender</div><button class="empty-action" onclick="navigate('estoque')">Ir ao Estoque</button></div>`; return; }
   el.innerHTML = f.map(p => {
     const n = cart[p.id] || 0;
     return `<div class="prod-row ${n > 0 ? 'selected' : ''}" id="pr-${p.id}">
@@ -2624,7 +2746,7 @@ function renderEstoque(q = '') {
   const f = products.filter(p => p.name.toLowerCase().includes((q || '').toLowerCase()));
   const el = document.getElementById('estoque-list');
   if (!el) return;
-  if (!f.length) { el.innerHTML = '<div style="padding:28px;text-align:center;color:var(--text3)">Nenhum produto cadastrado</div>'; }
+  if (!f.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-packages"></i></div><div class="empty-title">Nenhum produto cadastrado</div><div class="empty-sub">Adicione seu primeiro item ao estoque</div></div>`; }
   else el.innerHTML = f.map(p => {
     const pct = Math.min(100, Math.round(p.qty / Math.max(p.min * 2, 1) * 100));
     const st = p.qty <= 0 ? 'out' : p.qty <= p.min ? 'low' : 'ok';
@@ -2708,7 +2830,7 @@ function renderFinanceiro() {
         <span class="badge ${i.pago ? 'green' : alerta.badgeClasse}">${i.pago ? 'pago' : alerta.label}</span>
       </div>
     </div>`;
-  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a pagar</div>';
+  }).join('') : `<div class="empty-state"><div class="empty-icon" style="background:var(--success-light);color:var(--success)"><i class="ti ti-circle-check"></i></div><div class="empty-title">Tudo em dia!</div><div class="empty-sub">Nenhuma conta a pagar pendente</div></div>`;
 
   const rEl = document.getElementById('receber-list');
   if (rEl) rEl.innerHTML = aReceber.length ? aReceber.map(i => {
@@ -2728,7 +2850,7 @@ function renderFinanceiro() {
         <span class="badge ${i.recebido ? 'green' : alerta.badgeClasse}">${i.recebido ? 'recebido' : alerta.label}</span>
       </div>
     </div>`;
-  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma conta a receber</div>';
+  }).join('') : `<div class="empty-state"><div class="empty-icon" style="background:var(--success-light);color:var(--success)"><i class="ti ti-piggy-bank"></i></div><div class="empty-title">Nada a receber</div><div class="empty-sub">Nenhuma conta a receber cadastrada</div></div>`;
 
   const dEl = document.getElementById('desp-list');
   if (dEl) dEl.innerHTML = despesas.length ? despesas.map(i => {
@@ -2748,7 +2870,7 @@ function renderFinanceiro() {
         ${i.pago ? '<span class="badge green">pago</span>' : `<span class="badge ${alerta.badgeClasse}">${alerta.label}</span>`}
       </div>
     </div>`;
-  }).join('') : '<div style="padding:24px;text-align:center;color:var(--text3)">Nenhuma despesa registrada</div>';
+  }).join('') : `<div class="empty-state"><div class="empty-icon" style="background:var(--success-light);color:var(--success)"><i class="ti ti-report-money"></i></div><div class="empty-title">Sem despesas</div><div class="empty-sub">Nenhuma despesa registrada</div></div>`;
 
   // Banner de alertas no topo do financeiro
   checkVencimentos();
@@ -2904,7 +3026,7 @@ function renderRelatorio() {
 function renderClientes(lista = clientes) {
   const el = document.getElementById('cli-list');
   if (!el) return;
-  if (!lista.length) { el.innerHTML = '<div style="padding:28px;text-align:center;color:var(--text3)">Nenhum cliente encontrado</div>'; return; }
+  if (!lista.length) { el.innerHTML = `<div class="empty-state"><div class="empty-icon" style="background:var(--primary-light);color:var(--primary)"><i class="ti ti-users"></i></div><div class="empty-title">Nenhum cliente encontrado</div><div class="empty-sub">Cadastre clientes para controlar fiado e compras</div></div>`; return; }
   el.innerHTML = lista.map(c => {
     const ini = c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     return `<div class="list-item" style="cursor:pointer;transition:.15s" onclick="openEditCli(${c.id})" onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">
@@ -3065,7 +3187,6 @@ document.getElementById('total-bar').style.display = 'none';
 setGreeting();
 
 async function init() {
-  showToast('🔄 Sincronizando dados...');
   try {
     await Promise.all([
       dbLoadProducts(),
@@ -3074,7 +3195,6 @@ async function init() {
       dbLoadFinanceiro(),
       loadEmpresaFromDB()
     ]);
-    showToast('✅ Dados carregados!');
   } catch (e) {
     showToast('⚠️ Erro de conexão — modo offline');
     console.error(e);
