@@ -1562,6 +1562,12 @@ const SUPABASE_URL = 'https://evdujdgfeanjpjuxruuj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2ZHVqZGdmZWFuanBqdXhydXVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMTQxMDQsImV4cCI6MjA5NDY5MDEwNH0.OmB91vMe-C8GuZjlyAdL3K6oKgydVa4XB6R9zCwuIYI';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Helper: retorna o user_id do usuário logado
+async function uid() {
+  const { data: { user } } = await sb.auth.getUser();
+  return user?.id || null;
+}
+
 // ========================================
 // STATE
 // ========================================
@@ -1971,7 +1977,7 @@ async function salvarEmpresa() {
 
   // Tenta salvar no Supabase em segundo plano (sem bloquear nem mostrar erro)
   sb.from('configuracoes')
-    .upsert({ chave: 'empresa', valor: JSON.stringify(d) }, { onConflict: 'chave' })
+    .upsert({ chave: 'empresa', valor: JSON.stringify(d), user_id: (await sb.auth.getUser()).data.user?.id }, { onConflict: 'chave' })
     .then(({ error }) => { if (error) console.info('[empresa] Supabase indisponível, usando localStorage.'); });
 
   loadEmpresa();
@@ -2206,7 +2212,8 @@ async function dbSaveProd() {
     quantidade: parseInt(document.getElementById('np-qty').value) || 0,
     estoque_minimo: 5
   };
-  const { error } = await sb.from('produtos').insert([row]);
+  const user_id = await uid();
+  const { error } = await sb.from('produtos').insert([{ ...row, user_id }]);
   if (error) { showToast('❌ Erro ao salvar produto'); console.error(error); return; }
   ['np-name', 'np-cost', 'np-price', 'np-qty'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -2414,7 +2421,8 @@ async function finalizarVenda() {
   if (rcPayEl) rcPayEl.innerHTML = payBlock;
 
   // 1. Salvar venda
-  const row = { codigo, itens: itensDesc.join(', '), total, desconto: disc, pagamento: pagLabel, criado_em: new Date().toISOString() };
+  const user_id = await uid();
+  const row = { codigo, itens: itensDesc.join(', '), total, desconto: disc, pagamento: pagLabel, criado_em: new Date().toISOString(), user_id };
   const { error } = await sb.from('vendas').insert([row]);
   if (error) console.error('Erro ao salvar venda', error);
 
@@ -2427,7 +2435,8 @@ async function finalizarVenda() {
       vencimento: todayISO,
       status: 'pendente',
       recebido: false,
-      cliente: cliSel.name
+      cliente: cliSel.name,
+      user_id
     };
     const { data: recData, error: recError } = await sb.from('contas_receber').insert([novaContaReceber]).select().single();
     if (recError) {
@@ -2519,7 +2528,8 @@ async function dbSaveCli() {
     fiado: 0,
     total_compras: 0
   };
-  const { error } = await sb.from('clientes').insert([row]);
+  const user_id = await uid();
+  const { error } = await sb.from('clientes').insert([{ ...row, user_id }]);
   if (error) { showToast('❌ Erro ao salvar cliente'); console.error(error); return; }
   ['nc-name', 'nc-phone', 'nc-fiado'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   closeModal('modal-cli');
@@ -2564,11 +2574,11 @@ async function saveFinance() {
   let error;
 
   if (tipo === 'despesa') {
-    const res = await sb.from('despesas').insert([{ descricao, valor, categoria: 'Outros', criado_em: new Date().toISOString() }]);
+    const res = await sb.from('despesas').insert([{ descricao, valor, categoria: 'Outros', criado_em: new Date().toISOString(), user_id: await uid() }]);
     error = res.error;
   } else {
     const tabela = tipo === 'pagar' ? 'contas_pagar' : 'contas_receber';
-    const res = await sb.from(tabela).insert([{ descricao, valor, vencimento, status: 'pendente' }]);
+    const res = await sb.from(tabela).insert([{ descricao, valor, vencimento, status: 'pendente', user_id: await uid() }]);
     error = res.error;
   }
 
@@ -3366,10 +3376,15 @@ async function loginSubmit() {
   if (error) {
     const msgs = {
       'Invalid login credentials': 'E-mail ou senha incorretos.',
-      'Email not confirmed':        'Confirme seu e-mail antes de entrar.',
+      'Email not confirmed':        'Verifique sua caixa de entrada e confirme o e-mail antes de entrar.',
       'Too many requests':          'Muitas tentativas. Aguarde alguns minutos.'
     };
     loginShowError('login-error', msgs[error.message] || 'Erro: ' + error.message);
+    // Dica extra para email não confirmado
+    if (error.message === 'Email not confirmed') {
+      const errEl = document.getElementById('login-error');
+      if (errEl) errEl.innerHTML += `<br><span style="font-size:11px;font-weight:400">Não recebeu? Verifique spam ou <button onclick="reenviarConfirmacao('${email}')" style="background:none;border:none;color:#dc2626;text-decoration:underline;cursor:pointer;font-size:11px;padding:0">reenviar e-mail</button></span>`;
+    }
     btn.disabled = false; btn.textContent = 'Entrar';
     document.getElementById('login-senha').value = '';
   }
@@ -3431,6 +3446,12 @@ function cadastroToggleSenha() {
   const icon = document.getElementById('cad-eye-icon');
   inp.type = inp.type === 'password' ? 'text' : 'password';
   icon.className = inp.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+async function reenviarConfirmacao(email) {
+  const { error } = await sb.auth.resend({ type: 'signup', email });
+  if (error) showToast('❌ Erro ao reenviar: ' + error.message);
+  else showToast('📧 E-mail de confirmação reenviado!');
 }
 
 async function logout() {
