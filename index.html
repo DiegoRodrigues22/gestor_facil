@@ -335,6 +335,36 @@ select.inp{cursor:pointer}
 .stock-action-btn:active{transform:scale(.9)}
 .stock-action-btn.add{background:#22c55e}
 .stock-action-btn.del{background:#ef4444}
+/* ===== LOGIN ===== */
+#login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;max-width:480px;margin:0 auto;overflow-y:auto}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.login-logo-icon{width:52px;height:52px;background:var(--primary);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 16px rgba(26,86,219,.35);flex-shrink:0}
+.login-logo-name{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+.login-logo-sub{font-size:12px;color:var(--text3);margin-top:1px}
+.login-card{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.login-title{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text3);margin-bottom:24px}
+.login-field{margin-bottom:16px}
+.login-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.login-input{width:100%;padding:13px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+.login-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.login-input::placeholder{color:var(--text3)}
+.login-input-wrap{position:relative}
+.login-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px}
+.login-remember{display:flex;align-items:center;gap:8px;margin-bottom:24px;cursor:pointer;user-select:none}
+.login-remember input{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.login-remember span{font-size:13px;color:var(--text2)}
+.login-btn{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer;transition:.15s;letter-spacing:.2px}
+.login-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,86,219,.35)}
+.login-btn:active{transform:translateY(0)}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;filter:none}
+.login-links{display:flex;justify-content:space-between;margin-top:18px}
+.login-link{background:none;border:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0}
+.login-link:hover{text-decoration:underline}
+.login-error{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;display:none;align-items:center;gap:8px}
+.login-error.show{display:flex}
+.login-footer{margin-top:20px;font-size:11px;color:var(--text3);text-align:center;line-height:1.6}
+
 /* ===== RELATÓRIOS ===== */
 
 .relatorio-btn{
@@ -526,6 +556,103 @@ select.inp{cursor:pointer}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none">
+  <div class="login-logo">
+    <div class="login-logo-icon">🏪</div>
+    <div>
+      <div class="login-logo-name">Gestor Fácil</div>
+      <div class="login-logo-sub">Sistema de gestão comercial</div>
+    </div>
+  </div>
+
+  <!-- PAINEL LOGIN -->
+  <div class="login-card" id="login-panel-login">
+    <div class="login-title">Bem-vindo de volta 👋</div>
+    <div class="login-sub">Acesse sua conta para continuar</div>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-field">
+      <label class="login-label" for="login-email">E-mail</label>
+      <input class="login-input" type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="login-senha">Senha</label>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="login-senha" placeholder="••••••••" style="padding-right:42px" autocomplete="current-password">
+        <button class="login-eye" onclick="loginToggleSenha()" type="button" title="Mostrar senha">
+          <i class="ti ti-eye" id="login-eye-icon"></i>
+        </button>
+      </div>
+    </div>
+    <label class="login-remember">
+      <input type="checkbox" id="login-remember" checked>
+      <span>Lembrar meu acesso</span>
+    </label>
+    <button class="login-btn" id="login-btn" onclick="loginSubmit()">Entrar</button>
+    <div class="login-links">
+      <button class="login-link" onclick="loginShowPanel('esqueci')">Esqueci a senha</button>
+      <button class="login-link" onclick="loginShowPanel('cadastro')">Criar empresa</button>
+    </div>
+  </div>
+
+  <!-- PAINEL ESQUECI SENHA -->
+  <div class="login-card" id="login-panel-esqueci" style="display:none">
+    <button onclick="loginShowPanel('login')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;padding:0;margin-bottom:16px;font-family:'DM Sans',sans-serif">
+      <i class="ti ti-arrow-left"></i> Voltar
+    </button>
+    <div class="login-title">Recuperar senha 🔑</div>
+    <div class="login-sub">Enviaremos um link de redefinição para seu e-mail</div>
+    <div class="login-error" id="esqueci-error"></div>
+    <div id="esqueci-success" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;align-items:center;gap:8px">
+      <i class="ti ti-circle-check"></i> <span id="esqueci-success-txt"></span>
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="esqueci-email">E-mail cadastrado</label>
+      <input class="login-input" type="email" id="esqueci-email" placeholder="seu@email.com">
+    </div>
+    <button class="login-btn" id="esqueci-btn" onclick="esqueciSubmit()">Enviar link de recuperação</button>
+  </div>
+
+  <!-- PAINEL CRIAR EMPRESA / CADASTRO -->
+  <div class="login-card" id="login-panel-cadastro" style="display:none">
+    <button onclick="loginShowPanel('login')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;padding:0;margin-bottom:16px;font-family:'DM Sans',sans-serif">
+      <i class="ti ti-arrow-left"></i> Voltar
+    </button>
+    <div class="login-title">Criar conta 🚀</div>
+    <div class="login-sub">Crie sua conta e comece a usar o Gestor Fácil</div>
+    <div class="login-error" id="cadastro-error"></div>
+    <div class="login-field">
+      <label class="login-label" for="cad-nome">Nome da empresa</label>
+      <input class="login-input" type="text" id="cad-nome" placeholder="Ex: Mercadinho do João">
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="cad-email">E-mail</label>
+      <input class="login-input" type="email" id="cad-email" placeholder="seu@email.com">
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="cad-senha">Senha</label>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" style="padding-right:42px">
+        <button class="login-eye" onclick="cadastroToggleSenha()" type="button">
+          <i class="ti ti-eye" id="cad-eye-icon"></i>
+        </button>
+      </div>
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="cad-senha2">Confirmar senha</label>
+      <input class="login-input" type="password" id="cad-senha2" placeholder="Repita a senha">
+    </div>
+    <button class="login-btn" id="cadastro-btn" onclick="cadastroSubmit()">Criar conta</button>
+  </div>
+
+  <div class="login-footer">
+    Gestor Fácil v0.9 Beta · Todos os direitos reservados
+  </div>
+</div>
+
+<!-- APP ROOT -->
+<div id="app-root" style="display:none;flex-direction:column;height:100%;height:100dvh">
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -538,6 +665,7 @@ select.inp{cursor:pointer}
   <div class="header-right">
     <button class="icon-btn" onclick="toggleTheme()" id="theme-btn" title="Tema"><i class="ti ti-sun" id="theme-icon"></i></button>
     <button class="icon-btn" onclick="navigate('config')" title="Configurações"><i class="ti ti-settings"></i></button>
+    <button class="icon-btn" onclick="logout()" title="Sair" style="color:var(--danger)"><i class="ti ti-logout"></i></button>
   </div>
 </header>
 
@@ -3180,9 +3308,144 @@ async function deleteBaixa() {
 }
 
 // ========================================
-// INIT
+// AUTH — Supabase Auth
 // ========================================
-setGreeting();
+
+function loginShowPanel(panel) {
+  ['login','esqueci','cadastro'].forEach(p => {
+    const el = document.getElementById('login-panel-' + p);
+    if (el) el.style.display = p === panel ? 'block' : 'none';
+  });
+  ['login-error','esqueci-error','cadastro-error'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+}
+
+function loginShowError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.innerHTML = `<i class="ti ti-alert-circle"></i> ${msg}`; el.classList.add('show'); }
+}
+
+async function authCheck() {
+  const screen = document.getElementById('login-screen');
+  const app    = document.getElementById('app-root');
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    screen.style.display = 'none';
+    app.style.display    = 'flex';
+    setGreeting();
+    init();
+  } else {
+    screen.style.display = 'flex';
+    app.style.display    = 'none';
+  }
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      screen.style.display = 'none';
+      app.style.display    = 'flex';
+      setGreeting();
+      init();
+    }
+    if (event === 'SIGNED_OUT') {
+      screen.style.display = 'flex';
+      app.style.display    = 'none';
+      loginShowPanel('login');
+    }
+  });
+}
+
+async function loginSubmit() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const btn   = document.getElementById('login-btn');
+  document.getElementById('login-error').classList.remove('show');
+  if (!email || !senha) { loginShowError('login-error', 'Preencha e-mail e senha.'); return; }
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+  if (error) {
+    const msgs = {
+      'Invalid login credentials': 'E-mail ou senha incorretos.',
+      'Email not confirmed':        'Confirme seu e-mail antes de entrar.',
+      'Too many requests':          'Muitas tentativas. Aguarde alguns minutos.'
+    };
+    loginShowError('login-error', msgs[error.message] || 'Erro: ' + error.message);
+    btn.disabled = false; btn.textContent = 'Entrar';
+    document.getElementById('login-senha').value = '';
+  }
+}
+
+async function esqueciSubmit() {
+  const email = document.getElementById('esqueci-email').value.trim();
+  const btn   = document.getElementById('esqueci-btn');
+  const succ  = document.getElementById('esqueci-success');
+  document.getElementById('esqueci-error').classList.remove('show');
+  succ.style.display = 'none';
+  if (!email) { loginShowError('esqueci-error', 'Informe seu e-mail.'); return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  btn.disabled = false; btn.textContent = 'Enviar link de recuperação';
+  if (error) {
+    loginShowError('esqueci-error', 'Erro ao enviar: ' + error.message);
+  } else {
+    document.getElementById('esqueci-success-txt').textContent = `Link enviado para ${email}. Verifique sua caixa de entrada.`;
+    succ.style.display = 'flex';
+    document.getElementById('esqueci-email').value = '';
+  }
+}
+
+async function cadastroSubmit() {
+  const nome   = document.getElementById('cad-nome').value.trim();
+  const email  = document.getElementById('cad-email').value.trim();
+  const senha  = document.getElementById('cad-senha').value;
+  const senha2 = document.getElementById('cad-senha2').value;
+  const btn    = document.getElementById('cadastro-btn');
+  document.getElementById('cadastro-error').classList.remove('show');
+  if (!nome)            { loginShowError('cadastro-error', 'Informe o nome da empresa.'); return; }
+  if (!email)           { loginShowError('cadastro-error', 'Informe o e-mail.'); return; }
+  if (senha.length < 6) { loginShowError('cadastro-error', 'Senha mínima de 6 caracteres.'); return; }
+  if (senha !== senha2) { loginShowError('cadastro-error', 'As senhas não coincidem.'); return; }
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  const { error } = await sb.auth.signUp({ email, password: senha, options: { data: { empresa: nome } } });
+  btn.disabled = false; btn.textContent = 'Criar conta';
+  if (error) {
+    const msgs = { 'User already registered': 'Este e-mail já está cadastrado.' };
+    loginShowError('cadastro-error', msgs[error.message] || error.message);
+  } else {
+    localStorage.setItem('cfg_empresa', JSON.stringify({ nome }));
+    showToast('✅ Conta criada! Verifique seu e-mail para confirmar.');
+    loginShowPanel('login');
+    document.getElementById('login-email').value = email;
+  }
+}
+
+function loginToggleSenha() {
+  const inp = document.getElementById('login-senha');
+  const icon = document.getElementById('login-eye-icon');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  icon.className = inp.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+function cadastroToggleSenha() {
+  const inp = document.getElementById('cad-senha');
+  const icon = document.getElementById('cad-eye-icon');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  icon.className = inp.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+async function logout() {
+  await sb.auth.signOut();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('login-screen')?.style.display === 'none') return;
+  if (document.getElementById('login-panel-esqueci')?.style.display !== 'none') esqueciSubmit();
+  else if (document.getElementById('login-panel-cadastro')?.style.display !== 'none') cadastroSubmit();
+  else loginSubmit();
+});
+
+authCheck();
 
 async function init() {
   try {
@@ -3198,7 +3461,6 @@ async function init() {
     console.error(e);
   }
 }
-init();
 function closeModal(id){
   document.getElementById(id)?.classList.remove('open');
 }
@@ -3206,6 +3468,9 @@ function closeModal(id){
 function openModal(id){
   document.getElementById(id)?.classList.add('open');
 }
+
+setGreeting();
 </script>
+</div><!-- /app-root -->
 </body>
 </html>
