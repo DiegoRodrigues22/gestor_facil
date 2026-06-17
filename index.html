@@ -600,17 +600,34 @@ select.inp{cursor:pointer}
     <button onclick="loginShowPanel('login')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;padding:0;margin-bottom:16px;font-family:'DM Sans',sans-serif">
       <i class="ti ti-arrow-left"></i> Voltar
     </button>
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="width:64px;height:64px;border-radius:18px;background:var(--warning-light);color:var(--warning);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px">
+        <i class="ti ti-key"></i>
+      </div>
+    </div>
     <div class="login-title">Recuperar senha 🔑</div>
-    <div class="login-sub">Enviaremos um link de redefinição para seu e-mail</div>
+    <div class="login-sub">Enviaremos um link de redefinição para o seu e-mail cadastrado</div>
     <div class="login-error" id="esqueci-error"></div>
-    <div id="esqueci-success" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;align-items:center;gap:8px">
-      <i class="ti ti-circle-check"></i> <span id="esqueci-success-txt"></span>
+    <div id="esqueci-success" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:16px;flex-direction:column;align-items:flex-start;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <i class="ti ti-circle-check" style="font-size:16px"></i>
+        <span id="esqueci-success-txt"></span>
+      </div>
+      <div style="font-size:11px;font-weight:500;color:#047857;line-height:1.5;padding-left:24px">
+        💡 Não chegou? Verifique a caixa de <strong>spam</strong> ou <button onclick="reenviarRecuperacao()" style="background:none;border:none;color:#047857;text-decoration:underline;cursor:pointer;font-size:11px;font-weight:700;padding:0;font-family:inherit">clique aqui para reenviar</button>.
+      </div>
     </div>
     <div class="login-field">
       <label class="login-label" for="esqueci-email">E-mail cadastrado</label>
-      <input class="login-input" type="email" id="esqueci-email" placeholder="seu@email.com">
+      <input class="login-input" type="email" id="esqueci-email" placeholder="seu@email.com" autocomplete="email">
     </div>
-    <button class="login-btn" id="esqueci-btn" onclick="esqueciSubmit()">Enviar link de recuperação</button>
+    <button class="login-btn" id="esqueci-btn" onclick="esqueciSubmit()">
+      <i class="ti ti-mail-forward" style="font-size:16px;margin-right:6px"></i> Enviar link de recuperação
+    </button>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text3);line-height:1.6">
+      Lembrou da senha?
+      <button onclick="loginShowPanel('login')" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit">Voltar ao login</button>
+    </div>
   </div>
 
   <!-- PAINEL CRIAR EMPRESA / CADASTRO -->
@@ -643,6 +660,56 @@ select.inp{cursor:pointer}
       <input class="login-input" type="password" id="cad-senha2" placeholder="Repita a senha">
     </div>
     <button class="login-btn" id="cadastro-btn" onclick="cadastroSubmit()">Criar conta</button>
+  </div>
+
+  <!-- PAINEL NOVA SENHA (após clicar no link do e-mail) -->
+  <div class="login-card" id="login-panel-nova-senha" style="display:none">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="width:64px;height:64px;border-radius:18px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px">
+        <i class="ti ti-lock-square-rounded-filled"></i>
+      </div>
+    </div>
+    <div class="login-title">Definir nova senha 🔐</div>
+    <div class="login-sub">Crie uma senha forte para proteger sua conta</div>
+    <div class="login-error" id="rec-error"></div>
+    <div id="rec-success" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:16px;align-items:center;gap:8px">
+      <i class="ti ti-circle-check"></i> <span id="rec-success-txt"></span>
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="rec-senha">Nova senha</label>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="rec-senha" placeholder="Mínimo 6 caracteres" style="padding-right:42px" autocomplete="new-password">
+        <button class="login-eye" onclick="recToggleSenha('rec-senha','rec-eye-icon')" type="button" title="Mostrar senha">
+          <i class="ti ti-eye" id="rec-eye-icon"></i>
+        </button>
+      </div>
+      <!-- Indicador de força da senha -->
+      <div id="rec-strength-wrap" style="margin-top:8px;display:none">
+        <div style="display:flex;gap:4px;height:4px;margin-bottom:6px">
+          <div id="rec-bar-1" style="flex:1;background:var(--border);border-radius:2px;transition:.2s"></div>
+          <div id="rec-bar-2" style="flex:1;background:var(--border);border-radius:2px;transition:.2s"></div>
+          <div id="rec-bar-3" style="flex:1;background:var(--border);border-radius:2px;transition:.2s"></div>
+          <div id="rec-bar-4" style="flex:1;background:var(--border);border-radius:2px;transition:.2s"></div>
+        </div>
+        <div id="rec-strength-lbl" style="font-size:11px;color:var(--text3);font-weight:600;display:flex;align-items:center;gap:5px"></div>
+      </div>
+    </div>
+    <div class="login-field">
+      <label class="login-label" for="rec-senha2">Confirmar nova senha</label>
+      <div class="login-input-wrap">
+        <input class="login-input" type="password" id="rec-senha2" placeholder="Repita a senha" style="padding-right:42px" autocomplete="new-password">
+        <button class="login-eye" onclick="recToggleSenha('rec-senha2','rec-eye2-icon')" type="button">
+          <i class="ti ti-eye" id="rec-eye2-icon"></i>
+        </button>
+      </div>
+      <div id="rec-match" style="font-size:11px;font-weight:600;margin-top:6px;display:none;align-items:center;gap:5px"></div>
+    </div>
+    <button class="login-btn" id="rec-btn" onclick="salvarNovaSenha()">
+      <i class="ti ti-shield-check" style="font-size:16px;margin-right:6px"></i> Atualizar senha
+    </button>
+    <button onclick="loginShowPanel('login')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;margin-top:14px;width:100%;font-family:'DM Sans',sans-serif;padding:0">
+      Voltar para o login
+    </button>
   </div>
 
   <div class="login-footer">
@@ -1949,13 +2016,15 @@ function loadEmpresa() {
 
 async function loadEmpresaFromDB() {
   try {
-    const { data, error } = await sb.from('configuracoes').select('*').eq('chave', 'empresa').single();
+    const user_id = await uid();
+    const { data, error } = await sb.from('configuracoes').select('*').eq('chave', 'empresa_' + user_id).maybeSingle();
+
     if (!error && data?.valor) {
       const d = JSON.parse(data.valor);
-      localStorage.setItem('cfg_empresa', JSON.stringify(d)); // cache local
+      localStorage.setItem('cfg_empresa', JSON.stringify(d));
       loadEmpresa();
     } else {
-      loadEmpresa(); // usa localStorage como fallback
+      loadEmpresa();
     }
   } catch(e) {
     loadEmpresa();
@@ -1971,18 +2040,59 @@ async function salvarEmpresa() {
     tel:  document.getElementById('emp-tel').value.trim(),
     end:  document.getElementById('emp-end').value.trim()
   };
-
-  // Salva localmente (funciona com arquivo local)
   localStorage.setItem('cfg_empresa', JSON.stringify(d));
-
-  // Tenta salvar no Supabase em segundo plano (sem bloquear nem mostrar erro)
+  
+  const user_id = await uid();
   sb.from('configuracoes')
-    .upsert({ chave: 'empresa', valor: JSON.stringify(d), user_id: (await sb.auth.getUser()).data.user?.id }, { onConflict: 'chave' })
-    .then(({ error }) => { if (error) console.info('[empresa] Supabase indisponível, usando localStorage.'); });
-
+    .upsert({ chave: 'empresa_' + user_id, valor: JSON.stringify(d), user_id }, { onConflict: 'chave' })
+    .then(({ error }) => { if (error) console.info('Supabase offline, usando cache.'); });
+    
   loadEmpresa();
   closeModal('modal-empresa');
   showToast('✅ Dados da empresa salvos!');
+}
+
+
+async function cfgLimpar(tipo) {
+  const msgs = {
+    vendas:     'Isso apagará TODO o histórico de vendas. Tem certeza?',
+    financeiro: 'Isso apagará TODAS as contas e despesas. Tem certeza?',
+    sistema:    '⚠️ ATENÇÃO: Isso resetará TODO o sistema. Esta ação é irreversível. Confirmar?'
+  };
+
+  if (!confirm(msgs[tipo])) return;
+  if (tipo === 'sistema' && !confirm('Segunda confirmação: resetar TUDO?')) return;
+
+  try {
+    const user_id = await uid(); // MUITO IMPORTANTE PARA NÃO APAGAR DADOS DE OUTROS!
+
+    if (tipo === 'vendas') {
+      await sb.from('vendas').delete().eq('user_id', user_id).neq('id', 0);
+      salesHist = []; renderHist(); renderHomeRecent(); renderHomeDashboard();
+      showToast('🗑️ Vendas apagadas!');
+    } else if (tipo === 'financeiro') {
+      await Promise.all([
+        sb.from('contas_pagar').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('contas_receber').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('despesas').delete().eq('user_id', user_id).neq('id', 0)
+      ]);
+      aReceber = []; aPagar = []; despesas = []; renderFinanceiro();
+      showToast('🗑️ Dados financeiros apagados!');
+    } else {
+      await Promise.all([
+        sb.from('vendas').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('produtos').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('clientes').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('contas_pagar').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('contas_receber').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('despesas').delete().eq('user_id', user_id).neq('id', 0),
+        sb.from('configuracoes').delete().eq('user_id', user_id).neq('id', 0)
+      ]);
+      localStorage.clear();
+      showToast('🔄 Sistema resetado! Recarregando...');
+      setTimeout(() => location.reload(), 1500);
+    }
+  } catch(e) { showToast('❌ Erro ao limpar dados'); console.error(e); }
 }
 
 // ========================================
@@ -2185,20 +2295,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========================================
 async function dbLoadProducts() {
   showLoading('estoque-list', '🔄 Carregando produtos...');
-  const { data, error } = await sb.from('produtos').select('*').order('nome');
+  const user_id = await uid();
+  const { data, error } = await sb.from('produtos').select('*').eq('user_id', user_id).order('nome');
+  
   if (error) { showToast('❌ Erro ao carregar produtos'); console.error(error); return; }
+  
   products = (data || []).map(r => ({
-    id: r.id,
-    name: r.nome,
-    cat: r.categoria || 'Outros',
-    cost: Number(r.preco_custo || 0),
-    price: Number(r.preco_venda || 0),
-    qty: Number(r.quantidade || 0),
-    min: Number(r.estoque_minimo || 5)
+    id: r.id, name: r.nome, cat: r.categoria || 'Outros', cost: Number(r.preco_custo || 0),
+    price: Number(r.preco_venda || 0), qty: Number(r.quantidade || 0), min: Number(r.estoque_minimo || 5)
   }));
-  renderEstoque();
-  renderSaleProds('');
-  renderHomeDashboard();
+  renderEstoque(); renderSaleProds(''); renderHomeDashboard();
 }
 
 async function dbSaveProd() {
@@ -2311,22 +2417,17 @@ async function deleteEditProd() {
 async function dbLoadVendas() {
   showLoading('hist-list', '🔄 Carregando vendas...');
   showLoading('home-recent', '');
-  const { data, error } = await sb.from('vendas').select('*').order('criado_em', { ascending: false }).limit(100);
+  const user_id = await uid();
+  const { data, error } = await sb.from('vendas').select('*').eq('user_id', user_id).order('criado_em', { ascending: false }).limit(100);
+  
   if (error) { showToast('❌ Erro ao carregar vendas'); console.error(error); return; }
+  
   salesHist = (data || []).map(r => ({
-    id: r.id,
-    codigo: r.codigo || ('#' + String(r.id).padStart(4, '0')),
-    items: r.itens || '',
-    total: Number(r.total || 0),
-    pay: r.pagamento || 'PIX',
-    time: fmtTime(r.criado_em),
-    date: fmtDate(r.criado_em),
-    criado_em: r.criado_em
+    id: r.id, codigo: r.codigo || ('#' + String(r.id).padStart(4, '0')),
+    items: r.itens || '', total: Number(r.total || 0), pay: r.pagamento || 'PIX',
+    time: fmtTime(r.criado_em), date: fmtDate(r.criado_em), criado_em: r.criado_em
   }));
-  renderHomeRecent();
-  renderHist();
-  renderHomeDashboard();
-  renderRelatorio();
+  renderHomeRecent(); renderHist(); renderHomeDashboard(); renderRelatorio();
 }
 
 async function finalizarVenda() {
@@ -2504,15 +2605,14 @@ function renderHist() {
 // ========================================
 async function dbLoadClientes() {
   showLoading('cli-list', '🔄 Carregando clientes...');
-  const { data, error } = await sb.from('clientes').select('*').order('nome');
+  const user_id = await uid();
+  const { data, error } = await sb.from('clientes').select('*').eq('user_id', user_id).order('nome');
+  
   if (error) { showToast('❌ Erro ao carregar clientes'); console.error(error); return; }
+  
   clientes = (data || []).map(r => ({
-    id: r.id,
-    name: r.nome,
-    phone: r.telefone || '',
-    fiado: Number(r.fiado || 0),
-    limite: Number(r.limite_fiado || 0),
-    compras: Number(r.total_compras || 0),
+    id: r.id, name: r.nome, phone: r.telefone || '', fiado: Number(r.fiado || 0),
+    limite: Number(r.limite_fiado || 0), compras: Number(r.total_compras || 0),
     ultima: r.ultima_compra ? fmtDate(r.ultima_compra) : 'Nunca'
   }));
   renderClientes();
@@ -2550,17 +2650,16 @@ async function deleteCli(id) {
 // SUPABASE — FINANCEIRO
 // ========================================
 async function dbLoadFinanceiro() {
+  const user_id = await uid();
   const [resPagar, resReceber, resDesp] = await Promise.all([
-    sb.from('contas_pagar').select('*').order('vencimento'),
-    sb.from('contas_receber').select('*').order('vencimento'),
-    sb.from('despesas').select('*').order('criado_em', { ascending: false }).limit(30)
+    sb.from('contas_pagar').select('*').eq('user_id', user_id).order('vencimento'),
+    sb.from('contas_receber').select('*').eq('user_id', user_id).order('vencimento'),
+    sb.from('despesas').select('*').eq('user_id', user_id).order('criado_em', { ascending: false }).limit(30)
   ]);
-  aPagar   = (resPagar.data   || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), vencISO: r.vencimento || null, st: r.status || 'pendente', pago:     r.status === 'pago'     }));
+  aPagar   = (resPagar.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), vencISO: r.vencimento || null, st: r.status || 'pendente', pago: r.status === 'pago' }));
   aReceber = (resReceber.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), venc: fmtDate(r.vencimento), vencISO: r.vencimento || null, st: r.status || 'pendente', recebido: r.status === 'recebido' }));
-  despesas = (resDesp.data    || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em),  vencISO: r.vencimento || null, cat: r.categoria || 'Outros', pago:    r.status === 'pago'     }));
-  renderFinanceiro();
-  renderHomeDashboard();
-  renderRelatorio();
+  despesas = (resDesp.data || []).map(r => ({ id: r.id, desc: r.descricao, val: Number(r.valor || 0), data: fmtDate(r.criado_em), vencISO: r.vencimento || null, cat: r.categoria || 'Outros', pago: r.status === 'pago' }));
+  renderFinanceiro(); renderHomeDashboard(); renderRelatorio();
 }
 
 async function saveFinance() {
@@ -3322,14 +3421,17 @@ async function deleteBaixa() {
 // ========================================
 
 function loginShowPanel(panel) {
-  ['login','esqueci','cadastro'].forEach(p => {
+  ['login','esqueci','cadastro','nova-senha'].forEach(p => {
     const el = document.getElementById('login-panel-' + p);
     if (el) el.style.display = p === panel ? 'block' : 'none';
   });
-  ['login-error','esqueci-error','cadastro-error'].forEach(id => {
+  ['login-error','esqueci-error','cadastro-error','rec-error'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('show');
   });
+  // esconde sucesso da nova senha ao trocar de tela
+  const succ = document.getElementById('rec-success');
+  if (succ && panel !== 'nova-senha') succ.style.display = 'none';
 }
 
 function loginShowError(id, msg) {
@@ -3337,9 +3439,70 @@ function loginShowError(id, msg) {
   if (el) { el.innerHTML = `<i class="ti ti-alert-circle"></i> ${msg}`; el.classList.add('show'); }
 }
 
+// Helper: detecta se estamos no fluxo de recuperação de senha
+function isRecoveryMode() {
+  return window.location.hash.includes('type=recovery');
+}
+
+// Flag global: true quando o Supabase acabou de processar um link de recuperação
+let __inPasswordRecovery = false;
+
+// Salva a hash inicial IMEDIATAMENTE — caso o Supabase limpe depois
+const __initialHash = window.location.hash;
+
+// Listener PRIORITÁRIO para PASSWORD_RECOVERY — registrado IMEDIATAMENTE após criar o cliente,
+// antes de qualquer outra função. Isso garante que pegamos o evento mesmo se o Supabase
+// já tiver processado a URL durante a inicialização.
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY' && session) {
+    __inPasswordRecovery = true;
+    const app = document.getElementById('app-root');
+    const ls  = document.getElementById('login-screen');
+    if (app) app.style.display = 'none';
+    if (ls)  ls.style.display  = 'flex';
+    loginShowPanel('nova-senha');
+    setTimeout(() => document.getElementById('rec-senha')?.focus(), 100);
+  }
+});
+
+// Função para mostrar o painel de nova senha (usada por múltiplos caminhos)
+function mostrarPainelNovaSenha() {
+  const app = document.getElementById('app-root');
+  const ls  = document.getElementById('login-screen');
+  if (app) app.style.display = 'none';
+  if (ls)  ls.style.display  = 'flex';
+  loginShowPanel('nova-senha');
+  setTimeout(() => document.getElementById('rec-senha')?.focus(), 100);
+}
+
 async function authCheck() {
   const screen = document.getElementById('login-screen');
   const app    = document.getElementById('app-root');
+
+  // ── DETECÇÃO DE RECUPERAÇÃO DE SENHA ──
+  // Caso 1: URL tem type=recovery (link recém-clicado, hash ainda não foi limpo)
+  // Caso 2: Evento PASSWORD_RECOVERY já foi disparado (setou __inPasswordRecovery)
+  const initialHashHasRecovery = __initialHash.includes('type=recovery');
+
+  if (initialHashHasRecovery || __inPasswordRecovery) {
+    __inPasswordRecovery = true;
+    mostrarPainelNovaSenha();
+    return;
+  }
+
+  // Dispara o processamento da URL (caso ainda não tenha sido feito)
+  await sb.auth.getSession();
+
+  // Dá um tick pro listener processar o evento PASSWORD_RECOVERY
+  await new Promise(r => setTimeout(r, 30));
+
+  // Se o listener marcou modo de recuperação, NÃO mostra o app
+  if (__inPasswordRecovery) {
+    if (screen) screen.style.display = 'flex';
+    if (app)    app.style.display    = 'none';
+    return;
+  }
+
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     screen.style.display = 'none';
@@ -3350,7 +3513,13 @@ async function authCheck() {
     screen.style.display = 'flex';
     app.style.display    = 'none';
   }
+
+  // Listener global para mudanças de autenticação posteriores
+  // (O listener do PASSWORD_RECOVERY já foi registrado no topo do script)
   sb.auth.onAuthStateChange((event, session) => {
+    // Em modo de recuperação, não interfere até a senha ser atualizada
+    if (__inPasswordRecovery) return;
+
     if (event === 'SIGNED_IN' && session) {
       screen.style.display = 'none';
       app.style.display    = 'flex';
@@ -3397,18 +3566,192 @@ async function esqueciSubmit() {
   document.getElementById('esqueci-error').classList.remove('show');
   succ.style.display = 'none';
   if (!email) { loginShowError('esqueci-error', 'Informe seu e-mail.'); return; }
-  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  // Validação simples de e-mail
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) { loginShowError('esqueci-error', 'Informe um e-mail válido.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:16px;margin-right:6px"></i> Enviando...';
+
   const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
-  btn.disabled = false; btn.textContent = 'Enviar link de recuperação';
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-mail-forward" style="font-size:16px;margin-right:6px"></i> Enviar link de recuperação';
+
   if (error) {
-    loginShowError('esqueci-error', 'Erro ao enviar: ' + error.message);
+    // Por segurança, mesmo se o e-mail não existir no sistema, mostramos sucesso.
+    // Mas exibimos erro só em casos reais (rate limit, erro de rede, etc.)
+    const msgs = {
+      'Email rate limit exceeded': 'Muitas tentativas. Aguarde alguns minutos.',
+      'For security purposes, you can only request this once every 60 seconds': 'Aguarde 60 segundos para tentar novamente.'
+    };
+    if (msgs[error.message]) {
+      loginShowError('esqueci-error', msgs[error.message]);
+    } else {
+      // Se der erro desconhecido mas for sucesso real, mostra sucesso (evita vazamento de info)
+      console.warn('resetPassword erro:', error);
+      document.getElementById('esqueci-success-txt').textContent = `Se o e-mail ${email} estiver cadastrado, você receberá o link em instantes.`;
+      succ.style.display = 'flex';
+      document.getElementById('esqueci-email').value = '';
+    }
   } else {
-    document.getElementById('esqueci-success-txt').textContent = `Link enviado para ${email}. Verifique sua caixa de entrada.`;
+    document.getElementById('esqueci-success-txt').textContent = `Link enviado para ${email}!`;
     succ.style.display = 'flex';
     document.getElementById('esqueci-email').value = '';
   }
 }
 
+// Reenvia o e-mail de recuperação (usado no botão dentro do success)
+async function reenviarRecuperacao() {
+  const email = document.getElementById('esqueci-email').value.trim();
+  if (!email) {
+    loginShowError('esqueci-error', 'Digite seu e-mail novamente para reenviar.');
+    return;
+  }
+  await esqueciSubmit();
+}
+// ── RECUPERAÇÃO DE SENHA: DETECTAR E ATUALIZAR ──
+
+// Toggle de mostrar/ocultar senha nos campos de recuperação
+function recToggleSenha(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (!inp || !icon) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  icon.className = inp.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+
+// Indicador de força da senha em tempo real
+function avaliarForcaSenha(s) {
+  let pontos = 0;
+  if (s.length >= 6) pontos++;
+  if (s.length >= 10) pontos++;
+  if (/[A-Z]/.test(s) && /[a-z]/.test(s)) pontos++;
+  if (/\d/.test(s)) pontos++;
+  if (/[^A-Za-z0-9]/.test(s)) pontos++;
+  // normaliza pra 4 níveis
+  if (pontos <= 1) return { nivel: 1, label: 'Fraca', cor: '#dc2626' };
+  if (pontos === 2) return { nivel: 2, label: 'Razoável', cor: '#ea580c' };
+  if (pontos === 3) return { nivel: 3, label: 'Boa', cor: '#0891b2' };
+  return { nivel: 4, label: 'Forte', cor: '#059669' };
+}
+
+function atualizarForcaSenha() {
+  const s = document.getElementById('rec-senha')?.value || '';
+  const wrap = document.getElementById('rec-strength-wrap');
+  const lbl  = document.getElementById('rec-strength-lbl');
+  if (!wrap || !lbl) return;
+  if (s.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const f = avaliarForcaSenha(s);
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById('rec-bar-' + i);
+    if (!bar) continue;
+    bar.style.background = i <= f.nivel ? f.cor : 'var(--border)';
+  }
+  lbl.innerHTML = `<i class="ti ti-shield" style="font-size:12px"></i> Força: <span style="color:${f.cor}">${f.label}</span>`;
+}
+
+function validarConfirmacaoSenha() {
+  const s1 = document.getElementById('rec-senha')?.value || '';
+  const s2 = document.getElementById('rec-senha2')?.value || '';
+  const el = document.getElementById('rec-match');
+  if (!el) return false;
+  if (s2.length === 0) { el.style.display = 'none'; return false; }
+  el.style.display = 'flex';
+  if (s1 === s2) {
+    el.innerHTML = '<i class="ti ti-circle-check" style="font-size:13px"></i> <span style="color:#059669">Senhas coincidem</span>';
+    return true;
+  } else {
+    el.innerHTML = '<i class="ti ti-circle-x" style="font-size:13px"></i> <span style="color:#dc2626">Senhas não conferem</span>';
+    return false;
+  }
+}
+
+// Listeners para os inputs da nova senha
+document.addEventListener('input', e => {
+  if (e.target?.id === 'rec-senha')  { atualizarForcaSenha(); validarConfirmacaoSenha(); }
+  if (e.target?.id === 'rec-senha2') { validarConfirmacaoSenha(); }
+});
+
+// Função mantida apenas por compatibilidade — a detecção de recuperação
+// agora é feita no listener prioritário registrado logo após createClient().
+function verificarRecuperacaoSenha() {
+  // Não faz mais nada — o listener top-level já cuida do PASSWORD_RECOVERY
+}
+
+// Salva a nova senha no banco
+async function salvarNovaSenha() {
+  const novaSenha  = document.getElementById('rec-senha').value;
+  const novaSenha2 = document.getElementById('rec-senha2').value;
+  const btn        = document.getElementById('rec-btn');
+  const errorEl    = document.getElementById('rec-error');
+  const succ       = document.getElementById('rec-success');
+
+  errorEl.classList.remove('show');
+  succ.style.display = 'none';
+
+  if (!novaSenha) {
+    errorEl.innerHTML = '<i class="ti ti-alert-circle"></i> Informe a nova senha.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if (novaSenha.length < 6) {
+    errorEl.innerHTML = '<i class="ti ti-alert-circle"></i> A senha deve ter no mínimo 6 caracteres.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if (novaSenha !== novaSenha2) {
+    errorEl.innerHTML = '<i class="ti ti-alert-circle"></i> As senhas não coincidem.';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" style="font-size:16px;margin-right:6px"></i> Atualizando...';
+
+  const { error } = await sb.auth.updateUser({ password: novaSenha });
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-shield-check" style="font-size:16px;margin-right:6px"></i> Atualizar senha';
+
+  if (error) {
+    const msgs = {
+      'Auth session missing!': 'Sessão expirada. Solicite um novo link de recuperação.',
+      'New password should be different from the old password.': 'A nova senha deve ser diferente da atual.'
+    };
+    errorEl.innerHTML = '<i class="ti ti-alert-circle"></i> ' + (msgs[error.message] || ('Erro: ' + error.message));
+    errorEl.classList.add('show');
+    return;
+  }
+
+  // Sucesso!
+  document.getElementById('rec-senha').value = '';
+  document.getElementById('rec-senha2').value = '';
+  document.getElementById('rec-success-txt').textContent = 'Senha atualizada! Agora você pode entrar com a nova senha.';
+  succ.style.display = 'flex';
+
+  // Limpa a hash da URL
+  window.location.hash = '';
+
+  // Limpa a flag de modo de recuperação (permite login normal depois)
+  __inPasswordRecovery = false;
+
+  // Sai da sessão temporária para forçar login com a nova senha
+  await sb.auth.signOut();
+
+  // Volta para o login depois de 2s
+  setTimeout(() => {
+    loginShowPanel('login');
+    document.getElementById('login-senha').value = '';
+  }, 2200);
+}
+
+// Dispara a checagem logo que a página carrega
+verificarRecuperacaoSenha();
+
+// AQUI FICA A FUNÇÃO DE CADASTRO INTEIRA COM SUAS CHAVES:
 async function cadastroSubmit() {
   const nome   = document.getElementById('cad-nome').value.trim();
   const email  = document.getElementById('cad-email').value.trim();
@@ -3416,21 +3759,32 @@ async function cadastroSubmit() {
   const senha2 = document.getElementById('cad-senha2').value;
   const btn    = document.getElementById('cadastro-btn');
   document.getElementById('cadastro-error').classList.remove('show');
+
   if (!nome)            { loginShowError('cadastro-error', 'Informe o nome da empresa.'); return; }
   if (!email)           { loginShowError('cadastro-error', 'Informe o e-mail.'); return; }
   if (senha.length < 6) { loginShowError('cadastro-error', 'Senha mínima de 6 caracteres.'); return; }
   if (senha !== senha2) { loginShowError('cadastro-error', 'As senhas não coincidem.'); return; }
+
   btn.disabled = true; btn.textContent = 'Criando conta...';
-  const { error } = await sb.auth.signUp({ email, password: senha, options: { data: { empresa: nome } } });
+
+  const { data, error } = await sb.auth.signUp({ email, password: senha, options: { data: { empresa: nome } } });
+
   btn.disabled = false; btn.textContent = 'Criar conta';
+
   if (error) {
     const msgs = { 'User already registered': 'Este e-mail já está cadastrado.' };
     loginShowError('cadastro-error', msgs[error.message] || error.message);
   } else {
     localStorage.setItem('cfg_empresa', JSON.stringify({ nome }));
-    showToast('✅ Conta criada! Verifique seu e-mail para confirmar.');
-    loginShowPanel('login');
-    document.getElementById('login-email').value = email;
+    
+    // Como a confirmação está desligada, a sessão já vem ativa
+    if (data.session) {
+      showToast('✅ Conta criada com sucesso!');
+    } else {
+      showToast('✅ Conta criada! Bem-vindo.');
+      loginShowPanel('login');
+      document.getElementById('login-email').value = email;
+    }
   }
 }
 
@@ -3463,6 +3817,7 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('login-screen')?.style.display === 'none') return;
   if (document.getElementById('login-panel-esqueci')?.style.display !== 'none') esqueciSubmit();
   else if (document.getElementById('login-panel-cadastro')?.style.display !== 'none') cadastroSubmit();
+  else if (document.getElementById('login-panel-nova-senha')?.style.display !== 'none') salvarNovaSenha();
   else loginSubmit();
 });
 
